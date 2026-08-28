@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+
+{% block title %}Add Expense / Income · HAM{% endblock %}
+
+{% block extra_head %}
+<style>
+  .form-card {
+    max-width: 480px;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: 12px;
+    padding: 1.75rem;
+  }
+
+  .form-card h1 {
+    margin: 0 0 1.5rem;
+    font-size: 1.3rem;
+  }
+
+  .field {
+    margin-bottom: 1.1rem;
+  }
+
+  .field label {
+    display: block;
+    font-size: 0.85rem;
+    font-weight: 500;
+    margin-bottom: 0.35rem;
+  }
+
+  .field input,
+  .field select {
+    width: 100%;
+    padding: 0.6rem 0.75rem;
+    border: 1px solid var(--color-border);
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: 0.95rem;
+    background: var(--color-surface);
+    color: var(--color-text);
+  }
+
+  .field select[multiple] {
+    height: 160px;
+  }
+
+  .field-hint {
+    color: var(--color-text-muted);
+    font-size: 0.8rem;
+    margin-top: 0.35rem;
+  }
+
+  .form-error {
+    background: #FEF2F2;
+    color: #B91C1C;
+    border: 1px solid #FECACA;
+    border-radius: 8px;
+    padding: 0.6rem 0.75rem;
+    font-size: 0.85rem;
+    margin-bottom: 1rem;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="form-card">
+  <h1>Add Expense / Income</h1>
+
+  {% if error %}
+  <div class="form-error">{{ error }}</div>
+  {% endif %}
+
+  <form method="post">
+    {% csrf_token %}
+
+    <div class="field">
+      <label for="type">Type</label>
+      <select id="type" name="type" required>
+        <option value="expense">Expense</option>
+        <option value="income">Income</option>
+        <option value="interest">Interest</option>
+      </select>
+    </div>
+
+    <div class="field">
+      <label for="name">Name</label>
+      <input type="text" id="name" name="name" required>
+    </div>
+
+    <div class="field">
+      <label for="amount">Amount</label>
+      <input type="number" id="amount" name="amount" step="0.01" min="0.01" required>
+    </div>
+
+    <div class="field">
+      <label for="excluded_accounts">Exclude Accounts</label>
+      <select id="excluded_accounts" name="excluded_accounts" multiple>
+        {% for account in accounts %}
+        <option value="{{ account.pk }}">{{ account.account_id }} — {{ account.user.first_name }}</option>
+        {% endfor %}
+      </select>
+      <p class="field-hint">Ctrl/Cmd-click to select multiple. Everyone else splits the amount evenly.</p>
+    </div>
+
+    <button type="submit" class="btn-primary">Save</button>
+  </form>
+</div>
+{% endblock %}

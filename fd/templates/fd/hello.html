@@ -1,0 +1,269 @@
+{% extends "base.html" %}
+
+{% block title %}Fixed Deposits · HAM{% endblock %}
+
+{% block extra_head %}
+<style>
+  .fd-header {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .fd-header h1 {
+    margin: 0;
+    font-size: 1.4rem;
+  }
+
+  .fd-header a.btn-primary {
+    text-decoration: none;
+    display: inline-block;
+  }
+
+  table {
+    width: 100%;
+    min-width: 640px;
+    border-collapse: collapse;
+  }
+
+  thead tr {
+    text-align: left;
+    border-bottom: 1px solid var(--color-border);
+    color: var(--color-text-muted);
+    font-size: 0.85rem;
+  }
+
+  th {
+    padding: 0.5rem 0.5rem 0.5rem 0;
+  }
+
+  td {
+    padding: 0.65rem 0.5rem 0.65rem 0;
+    border-bottom: 1px solid var(--color-border);
+    vertical-align: middle;
+  }
+
+  .empty-row {
+    color: var(--color-text-muted);
+    padding: 1rem 0;
+  }
+
+  .status-active {
+    color: var(--color-secondary);
+    font-weight: 600;
+  }
+
+  .status-completed {
+    color: var(--color-text-muted);
+  }
+
+  .view-participants {
+    color: var(--color-primary);
+    text-decoration: none;
+    font-size: 0.85rem;
+    font-weight: 600;
+  }
+
+  .btn-complete {
+    background: var(--color-secondary);
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    padding: 0.4rem 0.85rem;
+    font-family: inherit;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-block;
+  }
+
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.5);
+    z-index: 100;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .modal-overlay:target {
+    display: flex;
+  }
+
+  .modal-box {
+    background: var(--color-surface);
+    border-radius: 12px;
+    padding: 1.5rem;
+    max-width: 400px;
+    width: 90%;
+    max-height: 70vh;
+    overflow-y: auto;
+  }
+
+  .modal-box h2 {
+    margin: 0 0 1rem;
+    font-size: 1.1rem;
+  }
+
+  .modal-box ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .modal-box li {
+    padding: 0.5rem 0;
+    border-bottom: 1px solid var(--color-border);
+    font-size: 0.9rem;
+  }
+
+  .modal-close {
+    display: inline-block;
+    margin-top: 1rem;
+    color: var(--color-primary);
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.9rem;
+  }
+
+  .modal-box p {
+    font-size: 0.9rem;
+    color: var(--color-text-muted);
+    margin: 0 0 1rem;
+  }
+
+  .modal-actions {
+    display: flex;
+    gap: 0.75rem;
+    margin-top: 1rem;
+  }
+
+  .btn-confirm {
+    background: var(--color-secondary);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 0.55rem 1.1rem;
+    font-family: inherit;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  .btn-cancel {
+    background: transparent;
+    color: var(--color-text-muted);
+    border: 1px solid var(--color-border);
+    border-radius: 8px;
+    padding: 0.55rem 1.1rem;
+    font-family: inherit;
+    font-size: 0.9rem;
+    font-weight: 600;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="fd-header">
+  <h1>Fixed Deposits</h1>
+  {% if request.user.is_accountant or request.user.is_super_admin %}
+    <a class="btn-primary" href="{% url 'create_fd' %}">Create FD</a>
+  {% endif %}
+</div>
+
+<div class="table-responsive">
+<table>
+  <thead>
+    <tr>
+      <th>FD ID</th>
+      <th>FD No.</th>
+      <th>Amount</th>
+      <th>Duration</th>
+      <th>Start Date</th>
+      <th>Interest Rate</th>
+      <th>Interest Amount</th>
+      <th>Status</th>
+      <th>Participants</th>
+      {% if request.user.is_accountant or request.user.is_super_admin %}
+        <th></th>
+      {% endif %}
+    </tr>
+  </thead>
+  <tbody>
+    {% for fd in fds %}
+    <tr>
+      <td>{{ fd.fd_id }}</td>
+      <td>{{ fd.fd_number }}</td>
+      <td>{{ CURRENCY_SYMBOL }}{{ fd.amount|floatformat:2 }}</td>
+      <td>{{ fd.duration_years }} yr</td>
+      <td>{{ fd.start_date }}</td>
+      <td>{{ fd.interest_rate }}%</td>
+      <td>{{ CURRENCY_SYMBOL }}{{ fd.interest_amount|floatformat:2 }}</td>
+      <td>
+        {% if fd.status == 'active' %}
+          <span class="status-active">Active</span>
+        {% else %}
+          <span class="status-completed">Completed</span>
+        {% endif %}
+      </td>
+      <td><a class="view-participants" href="#participants-{{ fd.fd_id }}">View ({{ fd.participant_accounts.count }})</a></td>
+      {% if request.user.is_accountant or request.user.is_super_admin %}
+        <td>
+          {% if fd.status == 'active' %}
+          <a class="btn-complete" href="#confirm-complete-{{ fd.fd_id }}">Complete FD</a>
+          {% endif %}
+        </td>
+      {% endif %}
+    </tr>
+    {% empty %}
+    <tr><td colspan="10" class="empty-row">No fixed deposits found.</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+</div>
+
+{% for fd in fds %}
+<div class="modal-overlay" id="participants-{{ fd.fd_id }}">
+  <div class="modal-box">
+    <h2>{{ fd.fd_id }} Participants</h2>
+    <ul>
+      {% for account in fd.participant_accounts.all %}
+      <li>{{ account.user.get_full_name }} ({{ account.account_id }})</li>
+      {% empty %}
+      <li>No participants.</li>
+      {% endfor %}
+    </ul>
+    <a class="modal-close" href="#">Close</a>
+  </div>
+</div>
+{% if fd.status == 'active' %}
+  {% if request.user.is_accountant or request.user.is_super_admin %}
+  <div class="modal-overlay" id="confirm-complete-{{ fd.fd_id }}">
+    <div class="modal-box">
+      <h2>Complete {{ fd.fd_id }}?</h2>
+      <p>
+        This will distribute {{ CURRENCY_SYMBOL }}{{ fd.interest_amount|floatformat:2 }} interest to
+        {{ fd.participant_accounts.count }} participant{{ fd.participant_accounts.count|pluralize }} and
+        unlock the {{ CURRENCY_SYMBOL }}{{ fd.amount|floatformat:2 }} principal. This cannot be undone.
+      </p>
+      <div class="modal-actions">
+        <form method="post" action="{% url 'complete_fd' fd.pk %}">
+          {% csrf_token %}
+          <button type="submit" class="btn-confirm">Confirm</button>
+        </form>
+        <a class="btn-cancel" href="#">Cancel</a>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+{% endif %}
+{% endfor %}
+{% endblock %}

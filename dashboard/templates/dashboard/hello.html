@@ -1,0 +1,152 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard · HAM{% endblock %}
+
+{% block extra_head %}
+<style>
+  .dashboard-header h1 {
+    margin: 0 0 0.25rem;
+    font-size: 1.5rem;
+  }
+
+  .account-number {
+    color: var(--color-text-muted);
+    font-size: 0.9rem;
+    margin: 0 0 2rem;
+  }
+
+  .account-number span {
+    font-family: monospace;
+    font-weight: 600;
+    color: var(--color-text);
+  }
+
+  .cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1.25rem;
+  }
+
+  .card {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: 12px;
+    padding: 1.5rem;
+  }
+
+  .card-label {
+    color: var(--color-text-muted);
+    font-size: 0.85rem;
+    font-weight: 500;
+    margin: 0 0 0.5rem;
+  }
+
+  .card-value {
+    font-size: 1.8rem;
+    font-weight: 700;
+    margin: 0;
+  }
+
+  .card-value.primary {
+    color: var(--color-primary);
+  }
+
+  .card-value.secondary {
+    color: var(--color-secondary);
+  }
+
+  .section-label {
+    color: var(--color-text-muted);
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    margin: 2rem 0 0.75rem;
+  }
+
+  .section-label:first-of-type {
+    margin-top: 0;
+  }
+
+  .card-subrow {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 0.75rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid var(--color-border);
+    font-size: 0.9rem;
+  }
+
+  .card-subrow .label {
+    color: var(--color-text-muted);
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-header">
+  <h1>Hello, {{ request.user.get_full_name }}</h1>
+  <p class="account-number">HAM Account Number: <span>{{ my_account.account_id|default:"—" }}</span></p>
+</div>
+
+<div class="cards">
+  <div class="card">
+    <p class="card-label">HAM Total Savings</p>
+    <p class="card-value primary">{{ CURRENCY_SYMBOL }}{{ total_savings|floatformat:2 }}</p>
+    <div class="card-subrow">
+      <span class="label">Locked in FD</span>
+      <span>{{ CURRENCY_SYMBOL }}{{ total_locked_in_fd|floatformat:2 }}</span>
+    </div>
+  </div>
+  <div class="card">
+    <p class="card-label">My Savings</p>
+    <p class="card-value secondary">{{ CURRENCY_SYMBOL }}{{ my_savings|floatformat:2 }}</p>
+    <div class="card-subrow">
+      <span class="label">Locked in FD</span>
+      <span>{{ CURRENCY_SYMBOL }}{{ my_locked_in_fd|floatformat:2 }}</span>
+    </div>
+  </div>
+</div>
+</br>
+<hr>
+
+<p class="section-label">Income ({{ year }})</p>
+<div class="cards">
+  <div class="card">
+    <p class="card-label">HAM Total Income</p>
+    <p class="card-value primary">{{ CURRENCY_SYMBOL }}{{ total_income|floatformat:2 }}</p>
+  </div>
+  <div class="card">
+    <p class="card-label">My Income</p>
+    <p class="card-value secondary">{{ CURRENCY_SYMBOL }}{{ my_income|floatformat:2 }}</p>
+  </div>
+</div>
+
+<p class="section-label">Expenses ({{ year }})</p>
+<div class="cards">
+  <div class="card">
+    <p class="card-label">HAM Total Expenses</p>
+    <p class="card-value primary">{{ CURRENCY_SYMBOL }}{{ total_expenses|floatformat:2 }}</p>
+  </div>
+  <div class="card">
+    <p class="card-label">My Expenses</p>
+    <p class="card-value secondary">{{ CURRENCY_SYMBOL }}{{ my_expenses|floatformat:2 }}</p>
+  </div>
+</div>
+
+<p class="section-label">Fine ({{ year }})</p>
+<div class="cards">
+  <div class="card">
+    <p class="card-label">Fine Collected in HAM</p>
+    <p class="card-value primary">{{ CURRENCY_SYMBOL }}{{ ham_fine_collected|floatformat:2 }}</p>
+  </div>
+  <div class="card">
+    <p class="card-label">My Fine Paid</p>
+    <p class="card-value secondary">{{ CURRENCY_SYMBOL }}{{ my_fine_paid|floatformat:2 }}</p>
+    <div class="card-subrow">
+      <span class="label">Remaining</span>
+      <span>{{ CURRENCY_SYMBOL }}{{ my_fine_remaining|floatformat:2 }}</span>
+    </div>
+  </div>
+</div>
+{% endblock %}

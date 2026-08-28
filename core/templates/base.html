@@ -1,0 +1,202 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{% block title %}HAM{% endblock %}</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --color-primary: #4F46E5;
+    --color-primary-dark: #4338CA;
+    --color-secondary: #14B8A6;
+    --color-bg: #F8FAFC;
+    --color-surface: #FFFFFF;
+    --color-text: #0F172A;
+    --color-text-muted: #64748B;
+    --color-border: #E2E8F0;
+    --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    font-family: var(--font-sans);
+    background: var(--color-bg);
+    color: var(--color-text);
+  }
+
+  .navbar {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.85rem 1.5rem;
+    background: var(--color-surface);
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .logo {
+    flex-shrink: 0;
+    font-weight: 700;
+    font-size: 1.25rem;
+    letter-spacing: 0.02em;
+    color: var(--color-primary);
+    text-decoration: none;
+  }
+
+  .nav-toggle {
+    display: none;
+  }
+
+  .nav-toggle-label {
+    display: none;
+    flex-shrink: 0;
+    width: 24px;
+    height: 18px;
+    position: relative;
+    cursor: pointer;
+  }
+
+  .nav-toggle-label span,
+  .nav-toggle-label::before,
+  .nav-toggle-label::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background: var(--color-text);
+    border-radius: 1px;
+  }
+
+  .nav-toggle-label::before { top: 0; }
+  .nav-toggle-label span { top: 8px; }
+  .nav-toggle-label::after { top: 16px; }
+
+  .nav-links {
+    display: flex;
+    gap: 1.25rem;
+    align-items: center;
+  }
+
+  .nav-links a {
+    flex-shrink: 0;
+    color: var(--color-text-muted);
+    text-decoration: none;
+    font-size: 0.9rem;
+    font-weight: 500;
+  }
+
+  .nav-links a:hover {
+    color: var(--color-primary);
+  }
+
+  .nav-links .logout {
+    color: var(--color-secondary);
+  }
+
+  main {
+    padding: 2.5rem 1.5rem;
+    max-width: 960px;
+    margin: 0 auto;
+  }
+
+  .btn-primary {
+    background: var(--color-primary);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 0.65rem 1.25rem;
+    font-family: inherit;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  .btn-primary:hover {
+    background: var(--color-primary-dark);
+  }
+
+  .table-responsive {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  img, table { max-width: 100%; }
+
+  @media (max-width: 768px) {
+    .navbar {
+      padding: 0.75rem 1rem;
+      gap: 0.75rem;
+    }
+
+    .logo {
+      font-size: 1.1rem;
+    }
+
+    .nav-toggle-label {
+      display: block;
+    }
+
+    .nav-links {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      flex-direction: column;
+      align-items: stretch;
+      gap: 0;
+      max-height: 0;
+      overflow: hidden;
+      background: var(--color-surface);
+      border-bottom: 1px solid var(--color-border);
+      box-shadow: 0 4px 8px rgba(15, 23, 42, 0.06);
+      transition: max-height 0.25s ease;
+    }
+
+    .nav-links a {
+      width: 100%;
+      padding: 0.85rem 1.5rem;
+      border-bottom: 1px solid var(--color-border);
+    }
+
+    .nav-toggle:checked ~ .nav-links {
+      max-height: 320px;
+    }
+
+    main {
+      padding: 1.5rem 1rem;
+    }
+  }
+</style>
+{% block extra_head %}{% endblock %}
+</head>
+<body>
+{% if request.user.is_authenticated %}
+<nav class="navbar">
+  <a class="logo" href="{% url 'hello_dashboard' %}">HAM</a>
+  <input type="checkbox" id="nav-toggle" class="nav-toggle">
+  <label for="nav-toggle" class="nav-toggle-label" aria-label="Toggle navigation"><span></span></label>
+  <div class="nav-links">
+    <a href="{% url 'hello_dashboard' %}">Dashboard</a>
+    <a href="{% url 'hello_loans' %}">Loans</a>
+    <a href="{% url 'hello_payments' %}">Payments</a>
+    <a href="{% url 'hello_ledger' %}">Ledger</a>
+    <a href="{% url 'hello_rules' %}">Rules</a>
+    <a href="{% url 'hello_expenses' %}">Expense / Income</a>
+    <a href="{% url 'hello_fd' %}">FD</a>
+    <a class="logout" href="{% url 'logout' %}">Logout</a>
+  </div>
+</nav>
+{% endif %}
+<main>
+{% block content %}{% endblock %}
+</main>
+</body>
+</html>

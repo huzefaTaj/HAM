@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+
+{% block title %}Rules · HAM{% endblock %}
+
+{% block extra_head %}
+<style>
+  .rules-header h1 {
+    margin: 0 0 1.5rem;
+    font-size: 1.4rem;
+  }
+
+  .rule-section {
+    margin-bottom: 1.75rem;
+  }
+
+  .rule-section h2 {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--color-primary);
+    margin: 0 0 0.75rem;
+  }
+
+  .rule-section ul {
+    margin: 0;
+    padding-left: 1.25rem;
+  }
+
+  .rule-section li {
+    margin-bottom: 0.5rem;
+    line-height: 1.5;
+  }
+
+  .rule-section li:last-child {
+    margin-bottom: 0;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="rules-header">
+  <h1>Rules</h1>
+</div>
+
+<div class="rule-section">
+  <h2>Contribution</h2>
+  <ul>
+    <li>Every member contributes {{ CURRENCY_SYMBOL }}{{ monthly_due|floatformat:0 }} per month, up to {{ CURRENCY_SYMBOL }}{{ annual_due|floatformat:0 }} per year.</li>
+    <li>You can never deposit more than what's left of your {{ CURRENCY_SYMBOL }}{{ annual_due|floatformat:0 }} annual limit for the year.</li>
+    <li>The limit resets automatically every January.</li>
+  </ul>
+</div>
+
+<div class="rule-section">
+  <h2>Fine</h2>
+  <ul>
+    <li>Missing a month's contribution adds a {{ CURRENCY_SYMBOL }}{{ monthly_fine|floatformat:0 }} fine for that month.</li>
+    <li>Paying a lump sum in advance covers that many months ahead. For example, paying {{ CURRENCY_SYMBOL }}1000 covers 2 months, and paying the full {{ CURRENCY_SYMBOL }}{{ annual_due|floatformat:0 }} upfront covers the whole year.</li>
+  </ul>
+</div>
+
+<div class="rule-section">
+  <h2>Expense &amp; Income</h2>
+  <ul>
+    <li>An expense is split evenly across every active member's balance, except anyone specifically excluded.</li>
+    <li>Income or interest is split evenly and credited to every active member's balance, except anyone specifically excluded.</li>
+  </ul>
+</div>
+
+<div class="rule-section">
+  <h2>Fixed Deposit (FD)</h2>
+  <ul>
+    <li>An FD amount is split evenly across all active members except those excluded, and that share is locked from each person's balance. You can't use money that's locked in an active FD.</li>
+    <li>If any member doesn't have enough available balance for their share, the FD isn't created at all.</li>
+  </ul>
+</div>
+
+<div class="rule-section">
+  <h2>Approvals</h2>
+  <ul>
+    <li>A payment you submit yourself (contribution or fine) doesn't take effect immediately. It stays pending until an accountant or super admin approves it.</li>
+    <li>Creating or completing an FD, and adding an expense or income, can only be done by an accountant or super admin.</li>
+  </ul>
+</div>
+{% endblock %}

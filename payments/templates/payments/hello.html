@@ -1,0 +1,168 @@
+{% extends "base.html" %}
+
+{% block title %}Payments · HAM{% endblock %}
+
+{% block extra_head %}
+<style>
+  .payments-header {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+  }
+
+  .payments-header h1 {
+    margin: 0;
+    font-size: 1.4rem;
+  }
+
+  .payments-header a.btn-primary {
+    text-decoration: none;
+    display: inline-block;
+  }
+
+  .tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem 1.5rem;
+    border-bottom: 1px solid var(--color-border);
+    margin-bottom: 1.5rem;
+  }
+
+  .tabs a {
+    padding-bottom: 0.6rem;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: var(--color-text-muted);
+    border-bottom: 2px solid transparent;
+  }
+
+  .tabs a.active {
+    color: var(--color-primary);
+    border-bottom-color: var(--color-primary);
+  }
+
+  table {
+    width: 100%;
+    min-width: 480px;
+    border-collapse: collapse;
+  }
+
+  thead tr {
+    text-align: left;
+    border-bottom: 1px solid var(--color-border);
+    color: var(--color-text-muted);
+    font-size: 0.85rem;
+  }
+
+  th {
+    padding: 0.5rem 0.5rem 0.5rem 0;
+  }
+
+  td {
+    padding: 0.65rem 0.5rem 0.65rem 0;
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .txn-id {
+    font-family: monospace;
+    font-size: 0.8rem;
+    color: var(--color-text-muted);
+  }
+
+  .empty-row {
+    color: var(--color-text-muted);
+    padding: 1rem 0;
+  }
+
+  .entry-cr {
+    color: var(--color-secondary);
+    font-weight: 600;
+  }
+
+  .entry-dr {
+    color: #B91C1C;
+    font-weight: 600;
+  }
+
+  .status-pending {
+    color: var(--color-text-muted);
+    font-style: italic;
+  }
+
+  .status-approved {
+    color: var(--color-secondary);
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="payments-header">
+  <h1>Payments</h1>
+  <div style="display: flex; gap: 0.75rem;">
+    {% if request.user.is_accountant or request.user.is_super_admin %}
+      <a class="btn-primary" href="{% url 'approve_payments' %}">Approve Payments</a>
+    {% endif %}
+    <a class="btn-primary" href="{% url 'send_payment' %}">Send Payment</a>
+  </div>
+</div>
+
+<div class="tabs">
+  <a href="?tab=mine" class="{% if tab == 'mine' %}active{% endif %}">My Payments History</a>
+  <a href="?tab=all" class="{% if tab == 'all' %}active{% endif %}">All HAM Payments History</a>
+</div>
+
+<div class="table-responsive">
+<table>
+  <thead>
+    <tr>
+      <th>Transaction ID</th>
+      {% if tab == 'all' %}
+        <th>Name</th>
+      {% else %}
+        <th>Savings Account</th>
+      {% endif %}
+      <th>Payment Type</th>
+      <th>Entry Type</th>
+      <th>Amount</th>
+      <th>Status</th>
+      <th>Date</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for payment in payments %}
+    <tr>
+      <td class="txn-id">{{ payment.transaction_id }}</td>
+      {% if tab == 'all' %}
+        <td>{{ payment.user_full_name }}</td>
+      {% else %}
+        <td>{{ payment.savings_account.account_id }}</td>
+      {% endif %}
+      <td>{{ payment.get_payment_type_display }}</td>
+      <td>
+        {% if payment.entry_type == 'cr' %}
+          <span class="entry-cr">{{ payment.get_entry_type_display }}</span>
+        {% else %}
+          <span class="entry-dr">{{ payment.get_entry_type_display }}</span>
+        {% endif %}
+      </td>
+      <td>{{ CURRENCY_SYMBOL }}{{ payment.amount|floatformat:2 }}</td>
+      <td>
+        {% if payment.active %}
+          <span class="status-approved">Approved</span>
+        {% else %}
+          <span class="status-pending">Pending</span>
+        {% endif %}
+      </td>
+      <td>{{ payment.created_at }}</td>
+    </tr>
+    {% empty %}
+    <tr><td colspan="7" class="empty-row">No payments found.</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+</div>
+{% endblock %}

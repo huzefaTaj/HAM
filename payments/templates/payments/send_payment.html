@@ -1,0 +1,187 @@
+{% extends "base.html" %}
+
+{% block title %}Send Payment · HAM{% endblock %}
+
+{% block extra_head %}
+<style>
+  .form-card {
+    max-width: 420px;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: 12px;
+    padding: 1.75rem;
+  }
+
+  .form-card h1 {
+    margin: 0 0 0.5rem;
+    font-size: 1.3rem;
+  }
+
+  .form-card a.btn-primary {
+    text-decoration: none;
+    display: inline-block;
+  }
+
+  .form-hint {
+    color: var(--color-text-muted);
+    font-size: 0.85rem;
+    margin: 0 0 1.5rem;
+  }
+
+  .field {
+    margin-bottom: 1.1rem;
+  }
+
+  .field label {
+    display: block;
+    font-size: 0.85rem;
+    font-weight: 500;
+    margin-bottom: 0.35rem;
+  }
+
+  .field input,
+  .field select {
+    width: 100%;
+    padding: 0.6rem 0.75rem;
+    border: 1px solid var(--color-border);
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: 0.95rem;
+    background: var(--color-surface);
+    color: var(--color-text);
+  }
+
+  .form-error {
+    background: #FEF2F2;
+    color: #B91C1C;
+    border: 1px solid #FECACA;
+    border-radius: 8px;
+    padding: 0.6rem 0.75rem;
+    font-size: 0.85rem;
+    margin-bottom: 1rem;
+  }
+
+  .form-success {
+    background: #ECFDF5;
+    color: #047857;
+    border: 1px solid #A7F3D0;
+    border-radius: 8px;
+    padding: 0.6rem 0.75rem;
+    font-size: 0.85rem;
+    margin-bottom: 1rem;
+  }
+
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.5);
+    z-index: 100;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .modal-overlay:target {
+    display: flex;
+  }
+
+  .modal-box {
+    background: var(--color-surface);
+    border-radius: 12px;
+    padding: 1.5rem;
+    max-width: 400px;
+    width: 90%;
+  }
+
+  .modal-box h2 {
+    margin: 0 0 1rem;
+    font-size: 1.1rem;
+  }
+
+  .modal-box p {
+    font-size: 0.9rem;
+    color: var(--color-text-muted);
+    margin: 0 0 1rem;
+  }
+
+  .modal-actions {
+    display: flex;
+    gap: 0.75rem;
+    margin-top: 1rem;
+  }
+
+  .btn-confirm {
+    background: var(--color-secondary);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 0.55rem 1.1rem;
+    font-family: inherit;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  .btn-cancel {
+    background: transparent;
+    color: var(--color-text-muted);
+    border: 1px solid var(--color-border);
+    border-radius: 8px;
+    padding: 0.55rem 1.1rem;
+    font-family: inherit;
+    font-size: 0.9rem;
+    font-weight: 600;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="form-card">
+  <h1>Send Payment</h1>
+  <p class="form-hint">
+    Contributed {{ CURRENCY_SYMBOL }}{{ paid_this_year|floatformat:2 }} this year ·
+    up to {{ CURRENCY_SYMBOL }}{{ remaining_allowed|floatformat:2 }} more allowed ·
+    outstanding fine: {{ CURRENCY_SYMBOL }}{{ fine_due|floatformat:2 }}
+  </p>
+
+  {% if error %}
+  <div class="form-error">{{ error }}</div>
+  {% endif %}
+  {% if success %}
+  <div class="form-success">{{ success }}</div>
+  {% endif %}
+
+  <form method="post" id="send-payment-form" action="{% url 'send_payment' %}">
+    {% csrf_token %}
+
+    <div class="field">
+      <label for="payment_type">Type of Payment</label>
+      <select id="payment_type" name="payment_type" required>
+        <option value="contribution">Contribution (Credit)</option>
+        <option value="fine">Fine (Debit)</option>
+      </select>
+    </div>
+
+    <div class="field">
+      <label for="amount">Amount</label>
+      <input type="number" id="amount" name="amount" step="0.01" min="0.01" required>
+    </div>
+
+    <a class="btn-primary" href="#confirm-send-payment">Send</a>
+  </form>
+</div>
+
+<div class="modal-overlay" id="confirm-send-payment">
+  <div class="modal-box">
+    <h2>Send this payment?</h2>
+    <p>This will submit the payment for accountant approval.</p>
+    <div class="modal-actions">
+      <button type="submit" form="send-payment-form" class="btn-confirm">Confirm</button>
+      <a class="btn-cancel" href="#">Cancel</a>
+    </div>
+  </div>
+</div>
+{% endblock %}

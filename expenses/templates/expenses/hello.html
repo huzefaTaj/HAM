@@ -1,0 +1,143 @@
+{% extends "base.html" %}
+
+{% block title %}Expense / Income · HAM{% endblock %}
+
+{% block extra_head %}
+<style>
+  .expenses-header {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .expenses-header h1 {
+    margin: 0;
+    font-size: 1.4rem;
+  }
+
+  .expenses-header a.btn-primary {
+    text-decoration: none;
+    display: inline-block;
+  }
+
+  table {
+    width: 100%;
+    min-width: 480px;
+    border-collapse: collapse;
+  }
+
+  thead tr {
+    text-align: left;
+    border-bottom: 1px solid var(--color-border);
+    color: var(--color-text-muted);
+    font-size: 0.85rem;
+  }
+
+  th {
+    padding: 0.5rem 0.5rem 0.5rem 0;
+  }
+
+  td {
+    padding: 0.65rem 0.5rem 0.65rem 0;
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .empty-row {
+    color: var(--color-text-muted);
+    padding: 1rem 0;
+  }
+
+  .category-expense {
+    color: #B91C1C;
+    font-weight: 600;
+  }
+
+  .category-income {
+    color: var(--color-secondary);
+    font-weight: 600;
+  }
+
+  .pagination {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-top: 1.5rem;
+    font-size: 0.9rem;
+  }
+
+  .pagination a {
+    color: var(--color-primary);
+    text-decoration: none;
+    font-weight: 600;
+  }
+
+  .pagination span.disabled {
+    color: var(--color-text-muted);
+  }
+
+  .pagination .page-info {
+    color: var(--color-text-muted);
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="expenses-header">
+  <h1>Expense / Income</h1>
+  {% if request.user.is_accountant or request.user.is_super_admin %}
+    <a class="btn-primary" href="{% url 'add_transaction' %}">Add Expense / Income</a>
+  {% endif %}
+</div>
+
+<div class="table-responsive">
+<table>
+  <thead>
+    <tr>
+      <th>ID</th>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Amount</th>
+      <th>Date</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for row in page_obj %}
+    <tr>
+      <td>{{ row.id }}</td>
+      <td>{{ row.name }}</td>
+      <td>
+        {% if row.category == 'Expense' %}
+          <span class="category-expense">{{ row.category }}</span>
+        {% else %}
+          <span class="category-income">{{ row.category }}</span>
+        {% endif %}
+      </td>
+      <td>{{ CURRENCY_SYMBOL }}{{ row.amount|floatformat:2 }}</td>
+      <td>{{ row.created_at }}</td>
+    </tr>
+    {% empty %}
+    <tr><td colspan="5" class="empty-row">No transactions found.</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+</div>
+
+<div class="pagination">
+  {% if page_obj.has_previous %}
+    <a href="?page={{ page_obj.previous_page_number }}">Previous</a>
+  {% else %}
+    <span class="disabled">Previous</span>
+  {% endif %}
+
+  <span class="page-info">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+
+  {% if page_obj.has_next %}
+    <a href="?page={{ page_obj.next_page_number }}">Next</a>
+  {% else %}
+    <span class="disabled">Next</span>
+  {% endif %}
+</div>
+{% endblock %}
