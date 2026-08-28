@@ -6,6 +6,7 @@ from rest_framework_simplejwt.exceptions import TokenError
 from rest_framework_simplejwt.tokens import AccessToken, RefreshToken
 
 EXEMPT_PATH_PREFIXES = ('/login', '/logout', '/admin', '/static')
+CHANGE_PASSWORD_PATH = '/change-password/'
 
 
 class JWTCookieAuthenticationMiddleware:
@@ -22,6 +23,9 @@ class JWTCookieAuthenticationMiddleware:
         if user is None:
             login_url = reverse('login')
             return redirect(f'{login_url}?next={request.path}')
+
+        if user.must_change_password and request.path != CHANGE_PASSWORD_PATH:
+            return redirect(CHANGE_PASSWORD_PATH)
 
         request.user = user
         response = self.get_response(request)

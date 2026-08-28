@@ -1,5 +1,7 @@
 from django.conf import settings
 from django.contrib.auth import authenticate
+from django.contrib.auth.password_validation import validate_password
+from django.core.exceptions import ValidationError
 from django.shortcuts import redirect, render
 from django.urls import reverse
 from django.utils.http import url_has_allowed_host_and_scheme
@@ -50,3 +52,27 @@ def logout_view(request):
     response.delete_cookie(settings.JWT_ACCESS_COOKIE)
     response.delete_cookie(settings.JWT_REFRESH_COOKIE)
     return response
+
+
+def change_password_view(request):
+    error = None
+
+    if request.method == 'POST':
+        new_password = request.POST.get('new_password', '')
+        confirm_password = request.POST.get('confirm_password', '')
+
+        if not new_password or new_password != confirm_password:
+            error = 'Passwords do not match.'
+        else:
+            try:
+                validate_password(new_password, user=request.user)
+            except ValidationError as exc:
+                error = ' '.join(exc.messages)
+
+        if not error:
+            request.user.set_password(new_password)
+            request.user.must_change_password = False
+            request.user.save(update_fields=['password', 'must_change_password'])
+            return redirect('hello_dashboard')
+
+    return render(request, 'accounts/change_password.html', {'error': error})

@@ -21,6 +21,7 @@ class UserManager(BaseUserManager):
         extra_fields.setdefault('is_staff', True)
         extra_fields.setdefault('is_superuser', True)
         extra_fields.setdefault('role', User.Role.SUPER_ADMIN)
+        extra_fields.setdefault('must_change_password', False)
         return self.create_user(email, password, **extra_fields)
 
 
@@ -36,6 +37,7 @@ class User(AbstractBaseUser, PermissionsMixin, BaseModel):
     email = models.EmailField(unique=True)
     role = models.CharField(max_length=20, choices=Role.choices, default=Role.USER)
     is_staff = models.BooleanField(default=False)
+    must_change_password = models.BooleanField(default=True)
 
     objects = UserManager()
 
