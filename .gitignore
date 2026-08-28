@@ -21,6 +21,7 @@ static_root/
 # Environment variables / secrets
 .env
 .env.*
+.claude
 
 # Distribution / packaging
 build/
