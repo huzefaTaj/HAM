@@ -78,7 +78,9 @@
       <th>Name</th>
       <th>Account Number</th>
       <th>Paid This Year</th>
+      {% if FINE_ALLOWED %}
       <th>Fine</th>
+      {% endif %}
       <th>Remaining</th>
     </tr>
   </thead>
@@ -88,6 +90,7 @@
       <td>{{ row.user.get_full_name }}</td>
       <td>{{ row.account.account_id|default:"—" }}</td>
       <td>{{ CURRENCY_SYMBOL }}{{ row.paid|floatformat:2 }}</td>
+      {% if FINE_ALLOWED %}
       <td>
         {% if row.fine %}
           <span class="fine-value">{{ CURRENCY_SYMBOL }}{{ row.fine|floatformat:2 }}</span>
@@ -95,6 +98,7 @@
           <span class="fine-none">{{ CURRENCY_SYMBOL }}0.00</span>
         {% endif %}
       </td>
+      {% endif %}
       <td>
         {% if row.fully_paid %}
           <span class="fully-paid">Fully Paid</span>
@@ -104,7 +108,7 @@
       </td>
     </tr>
     {% empty %}
-    <tr><td colspan="5" class="empty-row">No users found.</td></tr>
+    <tr><td colspan="{% if FINE_ALLOWED %}5{% else %}4{% endif %}" class="empty-row">No users found.</td></tr>
     {% endfor %}
   </tbody>
 </table>

@@ -134,6 +134,7 @@
   </div>
 </div>
 
+{% if FINE_ALLOWED %}
 <p class="section-label">Fine ({{ year }})</p>
 <div class="cards">
   <div class="card">
@@ -149,4 +150,5 @@
     </div>
   </div>
 </div>
+{% endif %}
 {% endblock %}

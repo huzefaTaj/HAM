@@ -141,11 +141,13 @@
 {% block content %}
 <div class="form-card">
   <h1>Send Payment</h1>
-  <p class="form-hint">
-    Contributed {{ CURRENCY_SYMBOL }}{{ paid_this_year|floatformat:2 }} this year ·
-    up to {{ CURRENCY_SYMBOL }}{{ remaining_allowed|floatformat:2 }} more allowed ·
-    outstanding fine: {{ CURRENCY_SYMBOL }}{{ fine_due|floatformat:2 }}
-  </p>
+	  <p class="form-hint">
+	    Contributed {{ CURRENCY_SYMBOL }}{{ paid_this_year|floatformat:2 }} this year ·
+	    up to {{ CURRENCY_SYMBOL }}{{ remaining_allowed|floatformat:2 }} more allowed ·
+	    {% if FINE_ALLOWED %}
+	    outstanding fine: {{ CURRENCY_SYMBOL }}{{ fine_due|floatformat:2 }}
+	    {% endif %}
+	  </p>
 
   {% if error %}
   <div class="form-error">{{ error }}</div>
@@ -157,13 +159,15 @@
   <form method="post" id="send-payment-form" action="{% url 'send_payment' %}">
     {% csrf_token %}
 
-    <div class="field">
-      <label for="payment_type">Type of Payment</label>
-      <select id="payment_type" name="payment_type" required>
-        <option value="contribution">Contribution (Credit)</option>
-        <option value="fine">Fine (Debit)</option>
-      </select>
-    </div>
+	    <div class="field">
+	      <label for="payment_type">Type of Payment</label>
+	      <select id="payment_type" name="payment_type" required>
+	        <option value="contribution">Contribution (Credit)</option>
+	        {% if FINE_ALLOWED %}
+	        <option value="fine">Fine (Debit)</option>
+	        {% endif %}
+	      </select>
+	    </div>
 
     <div class="field">
       <label for="amount">Amount</label>

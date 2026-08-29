@@ -50,13 +50,20 @@
   </ul>
 </div>
 
-<div class="rule-section">
-  <h2>Fine</h2>
-  <ul>
-    <li>Missing a month's contribution adds a {{ CURRENCY_SYMBOL }}{{ monthly_fine|floatformat:0 }} fine for that month.</li>
-    <li>Paying a lump sum in advance covers that many months ahead. For example, paying {{ CURRENCY_SYMBOL }}1000 covers 2 months, and paying the full {{ CURRENCY_SYMBOL }}{{ annual_due|floatformat:0 }} upfront covers the whole year.</li>
-  </ul>
-</div>
+  <div class="rule-section">
+    <h2>Fine</h2>
+    {% if FINE_ALLOWED %}
+    <ul>
+      <li>Missing a month's contribution adds a {{ CURRENCY_SYMBOL }}{{ monthly_fine|floatformat:0 }} fine for that month.</li>
+      <li>Paying a lump sum in advance covers that many months ahead. For example, paying {{ CURRENCY_SYMBOL }}1000 covers 2 months, and paying the full {{ CURRENCY_SYMBOL }}{{ annual_due|floatformat:0 }} upfront covers the whole year.</li>
+    </ul>
+    {% else %}
+    <ul>
+      <li>Fine is not being taken for the year 2026.</li>
+      <li>Fine will start again from January 2027.</li>
+    </ul>
+    {% endif %}
+  </div>
 
 <div class="rule-section">
   <h2>Expense &amp; Income</h2>
@@ -77,7 +84,10 @@
 <div class="rule-section">
   <h2>Approvals</h2>
   <ul>
-    <li>A payment you submit yourself (contribution or fine) doesn't take effect immediately. It stays pending until an accountant or super admin approves it.</li>
+    <li>
+      A payment you submit yourself (contribution{% if FINE_ALLOWED %} or fine{% endif %}) doesn't take effect immediately.
+      It stays pending until an accountant or super admin approves it.
+    </li>
     <li>Creating or completing an FD, and adding an expense or income, can only be done by an accountant or super admin.</li>
   </ul>
 </div>

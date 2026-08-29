@@ -4,7 +4,7 @@ from django.db.models import Sum
 from django.db.models.functions import ExtractMonth
 from django.utils import timezone
 
-from core.constants import MONTHLY_DUE, MONTHLY_FINE
+from core.constants import FINE_ALLOWED, MONTHLY_DUE, MONTHLY_FINE
 from ledger.models import Fine
 from payments.models import Payment
 
@@ -26,6 +26,8 @@ def missed_months(month_totals, elapsed_months):
 def compute_fine_due(account, year=None):
     """Fine still owed for one account: gross fine from missed months, minus
     any fine payments already made this year."""
+    if not FINE_ALLOWED:
+        return Decimal('0')
     if account is None:
         return Decimal('0')
 
@@ -64,4 +66,6 @@ def compute_fine_due(account, year=None):
 def sync_fine(account, fine_due):
     if account is None:
         return
+    if not FINE_ALLOWED:
+        fine_due = Decimal('0')
     Fine.objects.update_or_create(savings_account=account, defaults={'fine_due': fine_due})

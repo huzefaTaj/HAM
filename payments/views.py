@@ -5,7 +5,7 @@ from django.shortcuts import redirect, render
 from django.utils import timezone
 
 from accounts.models import User
-from core.constants import ANNUAL_DUE
+from core.constants import ANNUAL_DUE, FINE_ALLOWED
 from core.decorators import role_required
 from income.models import Income
 from income.services import generate_income_payments
@@ -81,7 +81,9 @@ def send_payment(request):
                     )
                     success = 'Payment submitted — pending accountant approval.'
             elif payment_type == Payment.Type.FINE:
-                if amount > fine_due:
+                if not FINE_ALLOWED:
+                    error = 'Fine payments are currently disabled.'
+                elif amount > fine_due:
                     error = f'This exceeds your outstanding fine of {fine_due}.'
                 else:
                     Payment.objects.create(
@@ -112,6 +114,9 @@ def approve_payments(request):
         payment = Payment.objects.filter(pk=transaction_id, active=False).first()
 
         if payment:
+            if payment.payment_type == Payment.Type.FINE and not FINE_ALLOWED:
+                payment.delete()
+                return redirect('approve_payments')
             if action == 'approve':
                 payment.active = True
                 payment.save(update_fields=['active'])
