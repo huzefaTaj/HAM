@@ -7,7 +7,7 @@ from payments.models import Payment
 from savings.models import SavingsAccount
 
 
-def generate_income_payments(income):
+def generate_income_payments(income, created_at=None):
     excluded_ids = set(income.excluded_accounts.values_list('pk', flat=True))
     included_accounts = list(
         SavingsAccount.objects.filter(active=True)
@@ -32,10 +32,12 @@ def generate_income_payments(income):
     payment_type = income_to_payment_type.get(income.income_type, Payment.Type.INCOME)
 
     for account, share in zip(included_accounts, shares):
-        Payment.objects.create(
+        payment = Payment.objects.create(
             savings_account=account,
             amount=share,
             payment_type=payment_type,
             entry_type=Payment.EntryType.CREDIT,
         )
+        if created_at:
+            Payment.objects.filter(pk=payment.pk).update(created_at=created_at)
         SavingsAccount.objects.filter(pk=account.pk).update(balance=F('balance') + share)

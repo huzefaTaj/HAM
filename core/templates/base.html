@@ -192,6 +192,9 @@
     <a href="{% url 'hello_ledger' %}">Ledger</a>
     <a href="{% url 'hello_rules' %}">Rules</a>
     <a href="{% url 'hello_expenses' %}">Expense / Income</a>
+    {% if request.user.is_accountant or request.user.is_super_admin %}
+      <a href="{% url 'add_transaction' %}">Add Transaction</a>
+    {% endif %}
     <a href="{% url 'hello_fd' %}">FD</a>
     <a class="logout" href="{% url 'logout' %}">Logout</a>
   </div>

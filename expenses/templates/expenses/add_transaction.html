@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Add Expense / Income · HAM{% endblock %}
+{% block title %}Add Transaction · HAM{% endblock %}
 
 {% block extra_head %}
 <style>
@@ -64,7 +64,7 @@
 
 {% block content %}
 <div class="form-card">
-  <h1>Add Expense / Income</h1>
+  <h1>Add Transaction</h1>
 
   {% if error %}
   <div class="form-error">{{ error }}</div>
@@ -79,17 +79,35 @@
         <option value="expense">Expense</option>
         <option value="income">Income</option>
         <option value="interest">Interest</option>
+        <option value="contribution">Contribution</option>
       </select>
     </div>
 
-    <div class="field">
-      <label for="name">Name</label>
-      <input type="text" id="name" name="name" required>
+    <div class="field" id="name-field">
+      <label for="name">Title</label>
+      <input type="text" id="name" name="name">
+      <p class="field-hint">Required for expense/income/interest. Optional for contribution.</p>
     </div>
 
     <div class="field">
       <label for="amount">Amount</label>
       <input type="number" id="amount" name="amount" step="0.01" min="0.01" required>
+    </div>
+
+    <div class="field">
+      <label for="created_date">Create Date</label>
+      <input type="date" id="created_date" name="created_date">
+      <p class="field-hint">Optional. If chosen, the transaction will be dated to this day.</p>
+    </div>
+
+    <div class="field" id="contribution-account-field" style="display:none;">
+      <label for="contribution_account">Member (for contribution)</label>
+      <select id="contribution_account" name="contribution_account">
+        <option value="">— Select member account —</option>
+        {% for account in accounts %}
+        <option value="{{ account.pk }}">{{ account.account_id }} — {{ account.user.first_name }}</option>
+        {% endfor %}
+      </select>
     </div>
 
     <div class="field">
@@ -105,4 +123,26 @@
     <button type="submit" class="btn-primary">Save</button>
   </form>
 </div>
+
+<script>
+  (function () {
+    var typeSelect = document.getElementById('type');
+    var nameInput = document.getElementById('name');
+    var excludedSelect = document.getElementById('excluded_accounts');
+    var contributionAccountField = document.getElementById('contribution-account-field');
+    var contributionAccountSelect = document.getElementById('contribution_account');
+
+    function updateForm() {
+      var isContribution = typeSelect.value === 'contribution';
+
+      nameInput.required = !isContribution;
+      excludedSelect.disabled = isContribution;
+      contributionAccountField.style.display = isContribution ? '' : 'none';
+      contributionAccountSelect.required = isContribution;
+    }
+
+    typeSelect.addEventListener('change', updateForm);
+    updateForm();
+  })();
+</script>
 {% endblock %}
