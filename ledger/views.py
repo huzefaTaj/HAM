@@ -58,7 +58,7 @@ def hello_ledger(request):
         if dues_remaining < 0:
             dues_remaining = Decimal('0')
 
-        total_remaining = dues_remaining + fine
+        total_remaining = dues_remaining + (fine if FINE_ALLOWED else Decimal('0'))
 
         rows.append({
             'user': user,
