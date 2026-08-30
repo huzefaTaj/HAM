@@ -94,7 +94,6 @@ def balance_sheet(request):
     sums = (
         Payment.objects.filter(
             savings_account__user_id__in=member_ids,
-            created_at__year=year,
             active=True,
         )
         .values('savings_account__user_id', 'payment_type')
@@ -136,7 +135,7 @@ def balance_sheet(request):
 
     return render(request, 'ledger/balance_sheet.html', {
         'rows': rows,
-        'year': year,
+        'year': None,
         'totals': {
             'contribution': total_contribution,
             'interest': total_interest,

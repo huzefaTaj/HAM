@@ -61,7 +61,7 @@
 {% block content %}
 <div class="sheet-header">
   <h1>Balance Sheet</h1>
-  <span class="sheet-meta">{{ year }}</span>
+  <span class="sheet-meta">{% if year %}{{ year }}{% else %}All time{% endif %}</span>
 </div>
 
 <div class="table-responsive">
