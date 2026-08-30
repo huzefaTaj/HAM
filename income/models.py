@@ -36,7 +36,7 @@ class Income(BaseModel):
             last = (
                 cls.objects.select_for_update()
                 .filter(income_id__startswith=INCOME_ID_PREFIX)
-                .order_by('-created_at')
+                .order_by('-income_id')
                 .first()
             )
             next_number = 1

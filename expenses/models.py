@@ -30,7 +30,7 @@ class Expense(BaseModel):
             last = (
                 cls.objects.select_for_update()
                 .filter(expense_id__startswith=EXPENSE_ID_PREFIX)
-                .order_by('-created_at')
+                .order_by('-expense_id')
                 .first()
             )
             next_number = 1
