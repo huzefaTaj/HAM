@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+
+{% block title %}Balance Sheet · HAM{% endblock %}
+
+{% block extra_head %}
+<style>
+  .sheet-header {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .sheet-header h1 {
+    margin: 0;
+    font-size: 1.4rem;
+  }
+
+  .sheet-meta {
+    color: var(--color-text-muted);
+    font-size: 0.85rem;
+  }
+
+  table {
+    width: 100%;
+    min-width: 720px;
+    border-collapse: collapse;
+  }
+
+  thead tr {
+    text-align: left;
+    border-bottom: 1px solid var(--color-border);
+    color: var(--color-text-muted);
+    font-size: 0.85rem;
+  }
+
+  th {
+    padding: 0.5rem 0.5rem 0.5rem 0;
+    white-space: nowrap;
+  }
+
+  td {
+    padding: 0.65rem 0.5rem 0.65rem 0;
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .num {
+    text-align: right;
+    white-space: nowrap;
+  }
+
+  .empty-row {
+    color: var(--color-text-muted);
+    padding: 1rem 0;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="sheet-header">
+  <h1>Balance Sheet</h1>
+  <span class="sheet-meta">{{ year }}</span>
+</div>
+
+<div class="table-responsive">
+<table>
+  <thead>
+    <tr>
+      <th>Member</th>
+      <th class="num">Contribution</th>
+      <th class="num">Interest Earned</th>
+      <th class="num">Income</th>
+      <th class="num">Expenses</th>
+      <th class="num">Remaining Balance</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for row in rows %}
+    <tr>
+      <td>{{ row.user.get_full_name }}</td>
+      <td class="num">{{ CURRENCY_SYMBOL }}{{ row.contribution|floatformat:2 }}</td>
+      <td class="num">{{ CURRENCY_SYMBOL }}{{ row.interest|floatformat:2 }}</td>
+      <td class="num">{{ CURRENCY_SYMBOL }}{{ row.income|floatformat:2 }}</td>
+      <td class="num">{{ CURRENCY_SYMBOL }}{{ row.expenses|floatformat:2 }}</td>
+      <td class="num">{{ CURRENCY_SYMBOL }}{{ row.remaining|floatformat:2 }}</td>
+    </tr>
+    {% endfor %}
+    {% if rows %}
+    <tr>
+      <td><strong>Total</strong></td>
+      <td class="num"><strong>{{ CURRENCY_SYMBOL }}{{ totals.contribution|floatformat:2 }}</strong></td>
+      <td class="num"><strong>{{ CURRENCY_SYMBOL }}{{ totals.interest|floatformat:2 }}</strong></td>
+      <td class="num"><strong>{{ CURRENCY_SYMBOL }}{{ totals.income|floatformat:2 }}</strong></td>
+      <td class="num"><strong>{{ CURRENCY_SYMBOL }}{{ totals.expenses|floatformat:2 }}</strong></td>
+      <td class="num"><strong>{{ CURRENCY_SYMBOL }}{{ totals.remaining|floatformat:2 }}</strong></td>
+    </tr>
+    {% else %}
+    <tr><td colspan="6" class="empty-row">No users found.</td></tr>
+    {% endif %}
+  </tbody>
+</table>
+</div>
+{% endblock %}

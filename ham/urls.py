@@ -38,6 +38,7 @@ urlpatterns = [
     path('payments/send/', payments_views.send_payment, name='send_payment'),
     path('payments/approve/', payments_views.approve_payments, name='approve_payments'),
     path('ledger/', ledger_views.hello_ledger, name='hello_ledger'),
+    path('ledger/balance-sheet/', ledger_views.balance_sheet, name='balance_sheet'),
     path('rules/', rules_views.hello_rules, name='hello_rules'),
     path('dashboard/', dashboard_views.hello_dashboard, name='hello_dashboard'),
     path('expenses/', expenses_views.hello_expenses, name='hello_expenses'),
