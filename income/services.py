@@ -37,6 +37,7 @@ def generate_income_payments(income, created_at=None):
             amount=share,
             payment_type=payment_type,
             entry_type=Payment.EntryType.CREDIT,
+            income=income,
         )
         if created_at:
             Payment.objects.filter(pk=payment.pk).update(created_at=created_at)

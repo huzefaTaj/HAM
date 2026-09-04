@@ -30,6 +30,7 @@ def generate_expense_payments(expense, created_at=None):
             amount=share,
             payment_type=Payment.Type.EXPENSE,
             entry_type=Payment.EntryType.DEBIT,
+            expense=expense,
         )
         if created_at:
             Payment.objects.filter(pk=payment.pk).update(created_at=created_at)

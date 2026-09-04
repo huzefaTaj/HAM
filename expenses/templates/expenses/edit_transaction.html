@@ -1,0 +1,201 @@
+{% extends "base.html" %}
+
+{% block title %}Edit Transaction · HAM{% endblock %}
+
+{% block extra_head %}
+<style>
+  .form-card {
+    max-width: 480px;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: 12px;
+    padding: 1.75rem;
+  }
+
+  .form-card h1 {
+    margin: 0 0 1.5rem;
+    font-size: 1.3rem;
+  }
+
+  .field {
+    margin-bottom: 1.1rem;
+  }
+
+  .field label {
+    display: block;
+    font-size: 0.85rem;
+    font-weight: 500;
+    margin-bottom: 0.35rem;
+  }
+
+  .field input,
+  .field select {
+    width: 100%;
+    padding: 0.6rem 0.75rem;
+    border: 1px solid var(--color-border);
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: 0.95rem;
+    background: var(--color-surface);
+    color: var(--color-text);
+  }
+
+  .field select[multiple] {
+    height: 160px;
+  }
+
+  .field-hint {
+    color: var(--color-text-muted);
+    font-size: 0.8rem;
+    margin-top: 0.35rem;
+  }
+
+  .form-error {
+    background: #FEF2F2;
+    color: #B91C1C;
+    border: 1px solid #FECACA;
+    border-radius: 8px;
+    padding: 0.6rem 0.75rem;
+    font-size: 0.85rem;
+    margin-bottom: 1rem;
+  }
+
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.55);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 1.5rem;
+    z-index: 100;
+  }
+
+  .modal-overlay:target {
+    display: flex;
+  }
+
+  .modal-box {
+    width: 100%;
+    max-width: 420px;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: 12px;
+    padding: 1.25rem 1.25rem 1rem;
+    box-shadow: 0 16px 40px rgba(15, 23, 42, 0.18);
+  }
+
+  .modal-box h2 {
+    margin: 0 0 0.5rem;
+    font-size: 1.15rem;
+  }
+
+  .modal-box p {
+    margin: 0 0 1rem;
+    color: var(--color-text-muted);
+    font-size: 0.9rem;
+    line-height: 1.35;
+  }
+
+  .modal-actions {
+    display: flex;
+    gap: 0.75rem;
+    justify-content: flex-end;
+  }
+
+  .btn-confirm {
+    background: var(--color-primary);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 0.55rem 1.1rem;
+    font-family: inherit;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  .btn-confirm:hover {
+    background: var(--color-primary-dark);
+  }
+
+  .btn-cancel {
+    background: transparent;
+    color: var(--color-text-muted);
+    border: 1px solid var(--color-border);
+    border-radius: 8px;
+    padding: 0.55rem 1.1rem;
+    font-family: inherit;
+    font-size: 0.9rem;
+    font-weight: 600;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="form-card">
+  <h1>Edit Transaction</h1>
+
+  {% if error %}
+  <div class="form-error">{{ error }}</div>
+  {% endif %}
+
+  <form method="post" id="edit-transaction-form">
+    {% csrf_token %}
+
+    <div class="field">
+      <label for="type">Type</label>
+      <select id="type" name="type" required>
+        <option value="expense" {% if initial.type == 'expense' %}selected{% endif %}>Expense</option>
+        <option value="income" {% if initial.type == 'income' %}selected{% endif %}>Income</option>
+        <option value="interest" {% if initial.type == 'interest' %}selected{% endif %}>Interest</option>
+      </select>
+      <p class="field-hint">You can’t convert expense ↔ income; this is only to switch income ↔ interest.</p>
+    </div>
+
+    <div class="field">
+      <label for="name">Title</label>
+      <input type="text" id="name" name="name" value="{{ initial.name }}" required>
+    </div>
+
+    <div class="field">
+      <label for="amount">Amount</label>
+      <input type="number" id="amount" name="amount" step="0.01" min="0.01" value="{{ initial.amount }}" required>
+    </div>
+
+    <div class="field">
+      <label for="created_date">Create Date</label>
+      <input type="date" id="created_date" name="created_date" value="{{ initial.created_date }}">
+      <p class="field-hint">Optional. If chosen, updates the transaction date.</p>
+    </div>
+
+    <div class="field">
+      <label for="excluded_accounts">Exclude Accounts</label>
+      <select id="excluded_accounts" name="excluded_accounts" multiple>
+        {% for account in accounts %}
+        <option value="{{ account.pk }}" {% if account.pk in initial.excluded %}selected{% endif %}>
+          {{ account.account_id }} — {{ account.user.first_name }}
+        </option>
+        {% endfor %}
+      </select>
+      <p class="field-hint">Ctrl/Cmd-click to select multiple. Everyone else splits the amount evenly.</p>
+    </div>
+
+    <a class="btn-primary" href="#confirm-update">Update</a>
+  </form>
+</div>
+
+<div class="modal-overlay" id="confirm-update">
+  <div class="modal-box">
+    <h2>Save changes?</h2>
+    <p>This will update the transaction, re-create linked payments, and update member balances.</p>
+    <div class="modal-actions">
+      <button type="submit" form="edit-transaction-form" class="btn-confirm">Confirm</button>
+      <a class="btn-cancel" href="#">Cancel</a>
+    </div>
+  </div>
+</div>
+{% endblock %}

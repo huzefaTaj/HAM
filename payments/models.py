@@ -3,6 +3,8 @@ import uuid
 from django.db import models
 
 from core.models import BaseModel
+from expenses.models import Expense
+from income.models import Income
 from savings.models import SavingsAccount
 
 
@@ -28,6 +30,20 @@ class Payment(BaseModel):
     savings_account = models.ForeignKey(
         SavingsAccount,
         on_delete=models.PROTECT,
+        related_name='payments',
+    )
+    expense = models.ForeignKey(
+        Expense,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='payments',
+    )
+    income = models.ForeignKey(
+        Income,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
         related_name='payments',
     )
 
