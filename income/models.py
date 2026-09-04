@@ -24,6 +24,13 @@ class Income(BaseModel):
         related_name='excluded_incomes',
         blank=True,
     )
+    source_payment = models.OneToOneField(
+        'payments.Payment',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='fine_redistribution_income',
+    )
 
     def save(self, *args, **kwargs):
         if not self.income_id:

@@ -131,6 +131,7 @@ def approve_payments(request):
                         income_name=f'Fine redistribution — {payment.savings_account.account_id}',
                         income_type=Income.Type.FINE_REDISTRIBUTION,
                         amount=payment.amount,
+                        source_payment=payment,
                     )
                     redistribution.excluded_accounts.set([payment.savings_account])
                     generate_income_payments(redistribution)
@@ -154,3 +155,107 @@ def approve_payments(request):
     )
 
     return render(request, 'payments/approve_payments.html', {'pending_payments': pending_payments})
+
+
+@role_required(User.Role.ACCOUNTANT, User.Role.SUPER_ADMIN)
+def edit_payment(request, txn_id):
+    payment = Payment.objects.select_related('savings_account__user').filter(transaction_id=txn_id).first()
+    if not payment or not payment.active:
+        return redirect('hello_payments')
+
+    if payment.payment_type not in (Payment.Type.CONTRIBUTION, Payment.Type.FINE):
+        return redirect('hello_payments')
+
+    error = None
+
+    if request.method == 'POST':
+        amount_raw = (request.POST.get('amount') or '').strip()
+        amount = None
+        try:
+            amount = Decimal(amount_raw)
+            if amount <= 0:
+                raise InvalidOperation
+        except (InvalidOperation, ValueError):
+            error = 'Enter a valid amount.'
+
+        if not error:
+            old_amount = payment.amount
+            if amount == old_amount:
+                return redirect('hello_payments')
+
+            if payment.payment_type == Payment.Type.CONTRIBUTION:
+                delta = amount - old_amount
+                Payment.objects.filter(pk=payment.pk).update(amount=amount)
+                SavingsAccount.objects.filter(pk=payment.savings_account_id).update(balance=F('balance') + delta)
+                return redirect('hello_payments')
+
+            # Fine: adjust the payer's fine due and the redistribution income + payments.
+            redistribution = Income.objects.filter(source_payment=payment).first()
+            if redistribution is None:
+                error = 'Cannot edit this fine payment because its redistribution record is missing.'
+            else:
+                from django.db import transaction
+
+                with transaction.atomic():
+                    # reverse existing redistribution payments from balances, then delete them
+                    rows = list(
+                        Payment.objects.filter(income=redistribution)
+                        .values('savings_account_id')
+                        .annotate(total=Sum('amount'))
+                    )
+                    for row in rows:
+                        SavingsAccount.objects.filter(pk=row['savings_account_id']).update(balance=F('balance') - row['total'])
+                    Payment.objects.filter(income=redistribution).delete()
+
+                    Income.objects.filter(pk=redistribution.pk).update(amount=amount)
+                    Payment.objects.filter(pk=payment.pk).update(amount=amount)
+
+                    redistribution.refresh_from_db(fields=['amount', 'income_type'])
+                    generate_income_payments(redistribution, created_at=redistribution.created_at)
+
+                    sync_fine(payment.savings_account, compute_fine_due(payment.savings_account))
+                    return redirect('hello_payments')
+
+    return render(request, 'payments/edit_payment.html', {
+        'payment': payment,
+        'error': error,
+    })
+
+
+@role_required(User.Role.ACCOUNTANT, User.Role.SUPER_ADMIN)
+def delete_payment(request, txn_id):
+    if request.method != 'POST':
+        return redirect('hello_payments')
+
+    payment = Payment.objects.select_related('savings_account__user').filter(transaction_id=txn_id).first()
+    if not payment or not payment.active:
+        return redirect('hello_payments')
+
+    if payment.payment_type not in (Payment.Type.CONTRIBUTION, Payment.Type.FINE):
+        return redirect('hello_payments')
+
+    from django.db import transaction
+
+    with transaction.atomic():
+        if payment.payment_type == Payment.Type.CONTRIBUTION:
+            SavingsAccount.objects.filter(pk=payment.savings_account_id).update(balance=F('balance') - payment.amount)
+            payment.delete()
+            return redirect('hello_payments')
+
+        redistribution = Income.objects.filter(source_payment=payment).first()
+        if redistribution is not None:
+            rows = list(
+                Payment.objects.filter(income=redistribution)
+                .values('savings_account_id')
+                .annotate(total=Sum('amount'))
+            )
+            for row in rows:
+                SavingsAccount.objects.filter(pk=row['savings_account_id']).update(balance=F('balance') - row['total'])
+            Payment.objects.filter(income=redistribution).delete()
+            redistribution.delete()
+
+        payer_account = payment.savings_account
+        payment.delete()
+        sync_fine(payer_account, compute_fine_due(payer_account))
+
+    return redirect('hello_payments')

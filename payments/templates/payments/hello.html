@@ -96,6 +96,86 @@
   .status-approved {
     color: var(--color-secondary);
   }
+
+  .action-link {
+    color: var(--color-primary);
+    text-decoration: none;
+    font-weight: 600;
+    margin-right: 0.75rem;
+  }
+
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.55);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 1.5rem;
+    z-index: 100;
+  }
+
+  .modal-overlay:target {
+    display: flex;
+  }
+
+  .modal-box {
+    width: 100%;
+    max-width: 420px;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: 12px;
+    padding: 1.25rem 1.25rem 1rem;
+    box-shadow: 0 16px 40px rgba(15, 23, 42, 0.18);
+  }
+
+  .modal-box h2 {
+    margin: 0 0 0.5rem;
+    font-size: 1.15rem;
+  }
+
+  .modal-box p {
+    margin: 0 0 1rem;
+    color: var(--color-text-muted);
+    font-size: 0.9rem;
+    line-height: 1.35;
+  }
+
+  .modal-actions {
+    display: flex;
+    gap: 0.75rem;
+    justify-content: flex-end;
+  }
+
+  .btn-confirm {
+    background: #B91C1C;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 0.55rem 1.1rem;
+    font-family: inherit;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  .btn-confirm:hover {
+    background: #991B1B;
+  }
+
+  .btn-cancel {
+    background: transparent;
+    color: var(--color-text-muted);
+    border: 1px solid var(--color-border);
+    border-radius: 8px;
+    padding: 0.55rem 1.1rem;
+    font-family: inherit;
+    font-size: 0.9rem;
+    font-weight: 600;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+  }
 </style>
 {% endblock %}
 
@@ -130,6 +210,11 @@
       <th>Amount</th>
       <th>Status</th>
       <th>Date</th>
+      {% if tab == 'all' %}
+      {% if request.user.is_accountant or request.user.is_super_admin %}
+      <th>Actions</th>
+      {% endif %}
+      {% endif %}
     </tr>
   </thead>
   <tbody>
@@ -158,11 +243,76 @@
         {% endif %}
       </td>
       <td>{{ payment.created_at }}</td>
+      {% if tab == 'all' %}
+      {% if request.user.is_accountant or request.user.is_super_admin %}
+      <td>
+        {% if payment.active and payment.payment_type == 'contribution' %}
+          <a class="action-link" href="{% url 'edit_payment' payment.transaction_id %}">Edit</a>
+          <a
+            class="action-link"
+            href="#confirm-delete"
+            data-delete-url="{% url 'delete_payment' payment.transaction_id %}"
+            data-delete-label="{{ payment.transaction_id }}"
+          >Delete</a>
+        {% elif payment.active and payment.payment_type == 'fine' %}
+          <a class="action-link" href="{% url 'edit_payment' payment.transaction_id %}">Edit</a>
+          <a
+            class="action-link"
+            href="#confirm-delete"
+            data-delete-url="{% url 'delete_payment' payment.transaction_id %}"
+            data-delete-label="{{ payment.transaction_id }}"
+          >Delete</a>
+        {% else %}
+          —
+        {% endif %}
+      </td>
+      {% endif %}
+      {% endif %}
     </tr>
     {% empty %}
-    <tr><td colspan="7" class="empty-row">No payments found.</td></tr>
+    <tr><td colspan="{% if tab == 'all' %}{% if request.user.is_accountant or request.user.is_super_admin %}8{% else %}7{% endif %}{% else %}7{% endif %}" class="empty-row">No payments found.</td></tr>
     {% endfor %}
   </tbody>
 </table>
 </div>
+
+{% if tab == 'all' %}
+{% if request.user.is_accountant or request.user.is_super_admin %}
+<div class="modal-overlay" id="confirm-delete">
+  <div class="modal-box">
+    <h2>Delete this payment?</h2>
+    <p id="delete-label">This will update balances (and fine redistribution if applicable).</p>
+    <div class="modal-actions">
+      <form method="post" id="delete-form" action="">
+        {% csrf_token %}
+        <button type="submit" class="btn-confirm">Delete</button>
+      </form>
+      <a class="btn-cancel" href="#">Cancel</a>
+    </div>
+  </div>
+</div>
+
+<script>
+  (function () {
+    var overlay = document.getElementById('confirm-delete');
+    if (!overlay) return;
+
+    var deleteForm = document.getElementById('delete-form');
+    var deleteLabel = document.getElementById('delete-label');
+
+    document.addEventListener('click', function (e) {
+      var link = e.target && e.target.closest ? e.target.closest('a[data-delete-url]') : null;
+      if (!link) return;
+      deleteForm.action = link.getAttribute('data-delete-url') || '';
+      var label = link.getAttribute('data-delete-label');
+      if (label) {
+        deleteLabel.textContent = 'Delete payment: ' + label + '? This will update balances (and fine redistribution if applicable).';
+      } else {
+        deleteLabel.textContent = 'This will update balances (and fine redistribution if applicable).';
+      }
+    });
+  })();
+</script>
+{% endif %}
+{% endif %}
 {% endblock %}
