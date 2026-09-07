@@ -49,7 +49,7 @@ def hello_expenses(request):
     return render(request, 'expenses/hello.html', {'page_obj': page_obj})
 
 
-@role_required(User.Role.ACCOUNTANT, User.Role.SUPER_ADMIN)
+@role_required(User.Role.SUPER_ADMIN)
 def add_transaction(request):
     accounts = SavingsAccount.objects.filter(active=True).select_related('user').order_by('account_id')
     error = None
@@ -124,7 +124,7 @@ def add_transaction(request):
     })
 
 
-@role_required(User.Role.ACCOUNTANT, User.Role.SUPER_ADMIN)
+@role_required(User.Role.SUPER_ADMIN)
 def edit_transaction(request, txn_type, txn_id):
     accounts = SavingsAccount.objects.filter(active=True).select_related('user').order_by('account_id')
     error = None
@@ -249,7 +249,7 @@ def edit_transaction(request, txn_type, txn_id):
     })
 
 
-@role_required(User.Role.ACCOUNTANT, User.Role.SUPER_ADMIN)
+@role_required(User.Role.SUPER_ADMIN)
 def delete_transaction(request, txn_type, txn_id):
     if request.method != 'POST':
         return redirect('hello_expenses')

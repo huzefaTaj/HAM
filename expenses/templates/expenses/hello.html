@@ -167,7 +167,7 @@
 {% block content %}
 <div class="expenses-header">
   <h1>Expense / Income</h1>
-  {% if request.user.is_accountant or request.user.is_super_admin %}
+  {% if request.user.is_super_admin %}
     <a class="btn-primary" href="{% url 'add_transaction' %}">Add Expense / Income</a>
   {% endif %}
 </div>
@@ -181,7 +181,7 @@
       <th>Type</th>
       <th>Amount</th>
       <th>Date</th>
-      {% if request.user.is_accountant or request.user.is_super_admin %}
+      {% if request.user.is_super_admin %}
       <th>Actions</th>
       {% endif %}
     </tr>
@@ -200,7 +200,7 @@
       </td>
       <td>{{ CURRENCY_SYMBOL }}{{ row.amount|floatformat:2 }}</td>
       <td>{{ row.created_at }}</td>
-      {% if request.user.is_accountant or request.user.is_super_admin %}
+      {% if request.user.is_super_admin %}
       <td>
         <a class="action-link" href="{% url 'edit_transaction' row.txn_type row.id %}">Edit</a>
         <a
@@ -213,7 +213,7 @@
       {% endif %}
     </tr>
     {% empty %}
-    <tr><td colspan="{% if request.user.is_accountant or request.user.is_super_admin %}6{% else %}5{% endif %}" class="empty-row">No transactions found.</td></tr>
+    <tr><td colspan="{% if request.user.is_super_admin %}6{% else %}5{% endif %}" class="empty-row">No transactions found.</td></tr>
     {% endfor %}
   </tbody>
 </table>
@@ -235,7 +235,7 @@
   {% endif %}
 </div>
 
-{% if request.user.is_accountant or request.user.is_super_admin %}
+{% if request.user.is_super_admin %}
 <div class="modal-overlay" id="confirm-delete">
   <div class="modal-box">
     <h2>Delete this transaction?</h2>

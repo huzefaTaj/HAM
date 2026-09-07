@@ -106,7 +106,7 @@ def send_payment(request):
     })
 
 
-@role_required(User.Role.ACCOUNTANT, User.Role.SUPER_ADMIN)
+@role_required(User.Role.SUPER_ADMIN)
 def approve_payments(request):
     if request.method == 'POST':
         transaction_id = request.POST.get('transaction_id')
@@ -157,7 +157,7 @@ def approve_payments(request):
     return render(request, 'payments/approve_payments.html', {'pending_payments': pending_payments})
 
 
-@role_required(User.Role.ACCOUNTANT, User.Role.SUPER_ADMIN)
+@role_required(User.Role.SUPER_ADMIN)
 def edit_payment(request, txn_id):
     payment = Payment.objects.select_related('savings_account__user').filter(transaction_id=txn_id).first()
     if not payment or not payment.active:
@@ -222,7 +222,7 @@ def edit_payment(request, txn_id):
     })
 
 
-@role_required(User.Role.ACCOUNTANT, User.Role.SUPER_ADMIN)
+@role_required(User.Role.SUPER_ADMIN)
 def delete_payment(request, txn_id):
     if request.method != 'POST':
         return redirect('hello_payments')

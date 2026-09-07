@@ -193,7 +193,7 @@
     <a href="{% url 'balance_sheet' %}">Balance Sheet</a>
     <a href="{% url 'hello_rules' %}">Rules</a>
     <a href="{% url 'hello_expenses' %}">Expense / Income</a>
-    {% if request.user.is_accountant or request.user.is_super_admin %}
+    {% if request.user.is_super_admin %}
       <a href="{% url 'add_transaction' %}">Add Transaction</a>
     {% endif %}
     <a href="{% url 'hello_fd' %}">FD</a>

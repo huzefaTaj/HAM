@@ -183,7 +183,7 @@
 <div class="payments-header">
   <h1>Payments</h1>
   <div style="display: flex; gap: 0.75rem;">
-    {% if request.user.is_accountant or request.user.is_super_admin %}
+    {% if request.user.is_super_admin %}
       <a class="btn-primary" href="{% url 'approve_payments' %}">Approve Payments</a>
     {% endif %}
     <a class="btn-primary" href="{% url 'send_payment' %}">Send Payment</a>
@@ -211,7 +211,7 @@
       <th>Status</th>
       <th>Date</th>
       {% if tab == 'all' %}
-      {% if request.user.is_accountant or request.user.is_super_admin %}
+      {% if request.user.is_super_admin %}
       <th>Actions</th>
       {% endif %}
       {% endif %}
@@ -244,7 +244,7 @@
       </td>
       <td>{{ payment.created_at }}</td>
       {% if tab == 'all' %}
-      {% if request.user.is_accountant or request.user.is_super_admin %}
+      {% if request.user.is_super_admin %}
       <td>
         {% if payment.active and payment.payment_type == 'contribution' %}
           <a class="action-link" href="{% url 'edit_payment' payment.transaction_id %}">Edit</a>
@@ -270,14 +270,14 @@
       {% endif %}
     </tr>
     {% empty %}
-    <tr><td colspan="{% if tab == 'all' %}{% if request.user.is_accountant or request.user.is_super_admin %}8{% else %}7{% endif %}{% else %}7{% endif %}" class="empty-row">No payments found.</td></tr>
+    <tr><td colspan="{% if tab == 'all' %}{% if request.user.is_super_admin %}8{% else %}7{% endif %}{% else %}7{% endif %}" class="empty-row">No payments found.</td></tr>
     {% endfor %}
   </tbody>
 </table>
 </div>
 
 {% if tab == 'all' %}
-{% if request.user.is_accountant or request.user.is_super_admin %}
+{% if request.user.is_super_admin %}
 <div class="modal-overlay" id="confirm-delete">
   <div class="modal-box">
     <h2>Delete this payment?</h2>
