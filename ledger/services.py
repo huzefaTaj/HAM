@@ -1,7 +1,7 @@
 from decimal import Decimal
 
 from django.db.models import Sum
-from django.db.models.functions import ExtractMonth
+from django.db.models.functions import Coalesce, ExtractMonth, ExtractYear
 from django.utils import timezone
 
 from core.constants import FINE_ALLOWED, MONTHLY_DUE, MONTHLY_FINE
@@ -35,12 +35,9 @@ def compute_fine_due(account, year=None):
     elapsed_months = timezone.now().month - 1
 
     rows = (
-        Payment.objects.filter(
-            savings_account=account,
-            payment_type=Payment.Type.CONTRIBUTION,
-            created_at__year=year,
-            active=True,
-        )
+        Payment.objects.filter(savings_account=account, payment_type=Payment.Type.CONTRIBUTION, active=True)
+        .annotate(effective_year=Coalesce('applies_to_year', ExtractYear('created_at')))
+        .filter(effective_year=year)
         .annotate(month=ExtractMonth('created_at'))
         .values('month')
         .annotate(total=Sum('amount'))
@@ -50,12 +47,10 @@ def compute_fine_due(account, year=None):
     gross_fine = missed_months(month_totals, elapsed_months) * MONTHLY_FINE
 
     fine_paid = (
-        Payment.objects.filter(
-            savings_account=account,
-            payment_type=Payment.Type.FINE,
-            created_at__year=year,
-            active=True,
-        ).aggregate(total=Sum('amount'))['total']
+        Payment.objects.filter(savings_account=account, payment_type=Payment.Type.FINE, active=True)
+        .annotate(effective_year=Coalesce('applies_to_year', ExtractYear('created_at')))
+        .filter(effective_year=year)
+        .aggregate(total=Sum('amount'))['total']
         or Decimal('0')
     )
 

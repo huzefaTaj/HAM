@@ -37,6 +37,7 @@ urlpatterns = [
     path('payments/', payments_views.hello_payments, name='hello_payments'),
     path('payments/send/', payments_views.send_payment, name='send_payment'),
     path('payments/approve/', payments_views.approve_payments, name='approve_payments'),
+    path('payments/group/<str:kind>/<str:group_id>/', payments_views.group_detail, name='payment_group_detail'),
     path('payments/<uuid:txn_id>/edit/', payments_views.edit_payment, name='edit_payment'),
     path('payments/<uuid:txn_id>/delete/', payments_views.delete_payment, name='delete_payment'),
     path('ledger/', ledger_views.hello_ledger, name='hello_ledger'),

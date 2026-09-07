@@ -176,6 +176,28 @@
     display: inline-flex;
     align-items: center;
   }
+
+  .pagination {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-top: 1.5rem;
+    font-size: 0.9rem;
+  }
+
+  .pagination a {
+    color: var(--color-primary);
+    text-decoration: none;
+    font-weight: 600;
+  }
+
+  .pagination span.disabled {
+    color: var(--color-text-muted);
+  }
+
+  .pagination .page-info {
+    color: var(--color-text-muted);
+  }
 </style>
 {% endblock %}
 
@@ -194,6 +216,108 @@
   <a href="?tab=mine" class="{% if tab == 'mine' %}active{% endif %}">My Payments History</a>
   <a href="?tab=all" class="{% if tab == 'all' %}active{% endif %}">All HAM Payments History</a>
 </div>
+
+{% if tab == 'all' %}
+<form method="get" style="margin-bottom: 1rem; display:flex; flex-wrap:wrap; gap:0.75rem; align-items:end;">
+  <input type="hidden" name="tab" value="all">
+
+  <div>
+    <label style="display:block;font-size:0.8rem;color:var(--color-text-muted);margin-bottom:0.25rem;">Name / Title</label>
+    <input type="text" name="q" value="{{ filters.q }}" placeholder="Search..." style="padding:0.55rem 0.7rem;border:1px solid var(--color-border);border-radius:8px;min-width:220px;">
+  </div>
+
+  <div>
+    <label style="display:block;font-size:0.8rem;color:var(--color-text-muted);margin-bottom:0.25rem;">Type</label>
+    <select name="payment_type" style="padding:0.55rem 0.7rem;border:1px solid var(--color-border);border-radius:8px;">
+      <option value="" {% if not filters.payment_type %}selected{% endif %}>All</option>
+      <option value="contribution" {% if filters.payment_type == 'contribution' %}selected{% endif %}>Contribution</option>
+      {% if FINE_ALLOWED %}
+      <option value="fine" {% if filters.payment_type == 'fine' %}selected{% endif %}>Fine</option>
+      {% endif %}
+      <option value="expense" {% if filters.payment_type == 'expense' %}selected{% endif %}>Expense (Grouped)</option>
+      <option value="income" {% if filters.payment_type == 'income' %}selected{% endif %}>Income (Grouped)</option>
+      <option value="interest" {% if filters.payment_type == 'interest' %}selected{% endif %}>Interest (Grouped)</option>
+    </select>
+  </div>
+
+  <div>
+    <label style="display:block;font-size:0.8rem;color:var(--color-text-muted);margin-bottom:0.25rem;">Debit / Credit</label>
+    <select name="entry" style="padding:0.55rem 0.7rem;border:1px solid var(--color-border);border-radius:8px;">
+      <option value="" {% if not filters.entry %}selected{% endif %}>All</option>
+      <option value="dr" {% if filters.entry == 'dr' %}selected{% endif %}>Debit</option>
+      <option value="cr" {% if filters.entry == 'cr' %}selected{% endif %}>Credit</option>
+    </select>
+  </div>
+
+  <div>
+    <label style="display:block;font-size:0.8rem;color:var(--color-text-muted);margin-bottom:0.25rem;">From</label>
+    <input type="date" name="from" value="{{ filters.from }}" style="padding:0.55rem 0.7rem;border:1px solid var(--color-border);border-radius:8px;">
+  </div>
+
+  <div>
+    <label style="display:block;font-size:0.8rem;color:var(--color-text-muted);margin-bottom:0.25rem;">To</label>
+    <input type="date" name="to" value="{{ filters.to }}" style="padding:0.55rem 0.7rem;border:1px solid var(--color-border);border-radius:8px;">
+  </div>
+
+  <div style="display:flex; gap:0.5rem;">
+    <button type="submit" class="btn-primary" style="padding:0.6rem 1rem;">Filter</button>
+    <a class="btn-cancel" href="?tab=all" style="padding:0.55rem 1rem;">Clear</a>
+  </div>
+</form>
+{% endif %}
+
+{% if tab == 'mine' %}
+<form method="get" style="margin-bottom: 1rem; display:flex; flex-wrap:wrap; gap:0.75rem; align-items:end;">
+  <input type="hidden" name="tab" value="mine">
+
+  <div>
+    <label style="display:block;font-size:0.8rem;color:var(--color-text-muted);margin-bottom:0.25rem;">Type</label>
+    <select name="payment_type" style="padding:0.55rem 0.7rem;border:1px solid var(--color-border);border-radius:8px;">
+      <option value="" {% if not filters.payment_type %}selected{% endif %}>All</option>
+      <option value="contribution" {% if filters.payment_type == 'contribution' %}selected{% endif %}>Contribution</option>
+      <option value="interest" {% if filters.payment_type == 'interest' %}selected{% endif %}>Interest</option>
+      <option value="income" {% if filters.payment_type == 'income' %}selected{% endif %}>Income</option>
+      <option value="expense" {% if filters.payment_type == 'expense' %}selected{% endif %}>Expense</option>
+      {% if FINE_ALLOWED %}
+      <option value="fine" {% if filters.payment_type == 'fine' %}selected{% endif %}>Fine</option>
+      {% endif %}
+    </select>
+  </div>
+
+  <div>
+    <label style="display:block;font-size:0.8rem;color:var(--color-text-muted);margin-bottom:0.25rem;">Debit / Credit</label>
+    <select name="entry" style="padding:0.55rem 0.7rem;border:1px solid var(--color-border);border-radius:8px;">
+      <option value="" {% if not filters.entry %}selected{% endif %}>All</option>
+      <option value="dr" {% if filters.entry == 'dr' %}selected{% endif %}>Debit</option>
+      <option value="cr" {% if filters.entry == 'cr' %}selected{% endif %}>Credit</option>
+    </select>
+  </div>
+
+	  <div>
+	    <label style="display:block;font-size:0.8rem;color:var(--color-text-muted);margin-bottom:0.25rem;">Status</label>
+	    <select name="status" style="padding:0.55rem 0.7rem;border:1px solid var(--color-border);border-radius:8px;">
+	      <option value="" {% if not filters.status %}selected{% endif %}>All</option>
+	      <option value="approved" {% if filters.status == 'approved' %}selected{% endif %}>Approved</option>
+	      <option value="pending" {% if filters.status == 'pending' %}selected{% endif %}>Pending</option>
+	    </select>
+	  </div>
+
+	  <div>
+	    <label style="display:block;font-size:0.8rem;color:var(--color-text-muted);margin-bottom:0.25rem;">From</label>
+	    <input type="date" name="from" value="{{ filters.from }}" style="padding:0.55rem 0.7rem;border:1px solid var(--color-border);border-radius:8px;">
+	  </div>
+
+	  <div>
+	    <label style="display:block;font-size:0.8rem;color:var(--color-text-muted);margin-bottom:0.25rem;">To</label>
+	    <input type="date" name="to" value="{{ filters.to }}" style="padding:0.55rem 0.7rem;border:1px solid var(--color-border);border-radius:8px;">
+	  </div>
+
+	  <div style="display:flex; gap:0.5rem;">
+	    <button type="submit" class="btn-primary" style="padding:0.6rem 1rem;">Apply</button>
+	    <a class="btn-cancel" href="?tab=mine" style="padding:0.55rem 1rem;">Clear</a>
+	  </div>
+	</form>
+	{% endif %}
 
 <div class="table-responsive">
 <table>
@@ -220,13 +344,30 @@
   <tbody>
     {% for payment in payments %}
     <tr>
-      <td class="txn-id">{{ payment.transaction_id }}</td>
       {% if tab == 'all' %}
-        <td>{{ payment.user_full_name }}</td>
+        {% if payment.is_group %}
+          <td class="txn-id">{{ payment.group_id }}</td>
+          <td>{{ payment.title }}</td>
+        {% else %}
+          <td class="txn-id">{{ payment.transaction_id }}</td>
+          <td>{{ payment.user_full_name }}</td>
+        {% endif %}
       {% else %}
+        <td class="txn-id">{{ payment.transaction_id }}</td>
         <td>{{ payment.savings_account.account_id }}</td>
       {% endif %}
-      <td>{{ payment.get_payment_type_display }}</td>
+      <td>
+        {% if payment.is_group %}
+          {% if payment.group_kind == 'income' %}
+            {% if payment.payment_type == 'interest' %}Interest{% elif payment.payment_type == 'fine_redistribution' %}Fine Redistribution{% else %}Income{% endif %}
+          {% else %}
+            Expense
+          {% endif %}
+          · <a class="action-link" href="{% url 'payment_group_detail' payment.group_kind payment.group_id %}">View</a>
+        {% else %}
+          {{ payment.get_payment_type_display }}
+        {% endif %}
+      </td>
       <td>
         {% if payment.entry_type == 'cr' %}
           <span class="entry-cr">{{ payment.get_entry_type_display }}</span>
@@ -242,11 +383,13 @@
           <span class="status-pending">Pending</span>
         {% endif %}
       </td>
-      <td>{{ payment.created_at }}</td>
+      <td>{{ payment.created_at|date:"Y-m-d" }}</td>
       {% if tab == 'all' %}
       {% if request.user.is_super_admin %}
       <td>
-        {% if payment.active and payment.payment_type == 'contribution' %}
+        {% if payment.is_group %}
+          —
+        {% elif payment.active and payment.payment_type == 'contribution' %}
           <a class="action-link" href="{% url 'edit_payment' payment.transaction_id %}">Edit</a>
           <a
             class="action-link"
@@ -281,7 +424,7 @@
 <div class="modal-overlay" id="confirm-delete">
   <div class="modal-box">
     <h2>Delete this payment?</h2>
-    <p id="delete-label">This will update balances (and fine redistribution if applicable).</p>
+      <p id="delete-label">This will update balances (and fine redistribution if applicable).</p>
     <div class="modal-actions">
       <form method="post" id="delete-form" action="">
         {% csrf_token %}
@@ -314,5 +457,59 @@
   })();
 </script>
 {% endif %}
+{% endif %}
+
+{% if tab == 'mine' %}
+<form method="get" style="margin-top:0.75rem; display:flex; justify-content:flex-end; gap:0.5rem; align-items:center;">
+  <input type="hidden" name="tab" value="mine">
+  <input type="hidden" name="payment_type" value="{{ filters.payment_type }}">
+  <input type="hidden" name="entry" value="{{ filters.entry }}">
+  <input type="hidden" name="status" value="{{ filters.status }}">
+  <input type="hidden" name="from" value="{{ filters.from }}">
+  <input type="hidden" name="to" value="{{ filters.to }}">
+  <label style="font-size:0.85rem;color:var(--color-text-muted);">Show</label>
+  <select name="limit" onchange="this.form.submit()" style="padding:0.45rem 0.6rem;border:1px solid var(--color-border);border-radius:8px;">
+    <option value="10" {% if filters.limit == '10' %}selected{% endif %}>10</option>
+    <option value="50" {% if filters.limit == '50' %}selected{% endif %}>50</option>
+    <option value="100" {% if filters.limit == '100' %}selected{% endif %}>100</option>
+  </select>
+  <span style="font-size:0.85rem;color:var(--color-text-muted);">entries</span>
+</form>
+{% endif %}
+
+{% if tab == 'all' %}
+<form method="get" style="margin-top:0.75rem; display:flex; justify-content:flex-end; gap:0.5rem; align-items:center;">
+  <input type="hidden" name="tab" value="all">
+  <input type="hidden" name="q" value="{{ filters.q }}">
+  <input type="hidden" name="payment_type" value="{{ filters.payment_type }}">
+  <input type="hidden" name="entry" value="{{ filters.entry }}">
+  <input type="hidden" name="from" value="{{ filters.from }}">
+  <input type="hidden" name="to" value="{{ filters.to }}">
+  <label style="font-size:0.85rem;color:var(--color-text-muted);">Show</label>
+  <select name="limit" onchange="this.form.submit()" style="padding:0.45rem 0.6rem;border:1px solid var(--color-border);border-radius:8px;">
+    <option value="10" {% if filters.limit == '10' %}selected{% endif %}>10</option>
+    <option value="50" {% if filters.limit == '50' %}selected{% endif %}>50</option>
+    <option value="100" {% if filters.limit == '100' %}selected{% endif %}>100</option>
+  </select>
+  <span style="font-size:0.85rem;color:var(--color-text-muted);">entries</span>
+</form>
+{% endif %}
+
+{% if page_obj %}
+<div class="pagination">
+  {% if page_obj.has_previous %}
+    <a href="?{% if base_qs %}{{ base_qs }}&{% endif %}page={{ page_obj.previous_page_number }}">Previous</a>
+  {% else %}
+    <span class="disabled">Previous</span>
+  {% endif %}
+
+  <span class="page-info">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+
+  {% if page_obj.has_next %}
+    <a href="?{% if base_qs %}{{ base_qs }}&{% endif %}page={{ page_obj.next_page_number }}">Next</a>
+  {% else %}
+    <span class="disabled">Next</span>
+  {% endif %}
+</div>
 {% endif %}
 {% endblock %}

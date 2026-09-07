@@ -139,7 +139,7 @@
   {% endif %}
 
   <p class="field-hint">
-    {{ payment.user_full_name }} · {{ payment.get_payment_type_display }} · {{ payment.created_at }}
+    {{ payment.user_full_name }} · {{ payment.get_payment_type_display }} · {{ payment.created_at|date:"Y-m-d" }}
   </p>
 
   <form method="post" id="edit-payment-form">
@@ -165,4 +165,3 @@
   </div>
 </div>
 {% endblock %}
-

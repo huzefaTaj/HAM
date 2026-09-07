@@ -32,6 +32,7 @@ class Payment(BaseModel):
         on_delete=models.PROTECT,
         related_name='payments',
     )
+    applies_to_year = models.PositiveSmallIntegerField(null=True, blank=True)
     expense = models.ForeignKey(
         Expense,
         on_delete=models.SET_NULL,

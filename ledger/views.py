@@ -2,7 +2,7 @@ from collections import defaultdict
 from decimal import Decimal
 
 from django.db.models import Sum
-from django.db.models.functions import ExtractMonth
+from django.db.models.functions import Coalesce, ExtractMonth, ExtractYear
 from django.shortcuts import render
 from django.utils import timezone
 
@@ -19,7 +19,9 @@ def hello_ledger(request):
     elapsed_months = now.month - 1  # fully-completed months so far this year
 
     contributions = (
-        Payment.objects.filter(payment_type=Payment.Type.CONTRIBUTION, created_at__year=year, active=True)
+        Payment.objects.filter(payment_type=Payment.Type.CONTRIBUTION, active=True)
+        .annotate(effective_year=Coalesce('applies_to_year', ExtractYear('created_at')))
+        .filter(effective_year=year)
         .annotate(month=ExtractMonth('created_at'))
         .values('savings_account__user_id', 'month')
         .annotate(total=Sum('amount'))

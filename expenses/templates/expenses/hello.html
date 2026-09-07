@@ -199,7 +199,7 @@
         {% endif %}
       </td>
       <td>{{ CURRENCY_SYMBOL }}{{ row.amount|floatformat:2 }}</td>
-      <td>{{ row.created_at }}</td>
+      <td>{{ row.created_at|date:"Y-m-d" }}</td>
       {% if request.user.is_super_admin %}
       <td>
         <a class="action-link" href="{% url 'edit_transaction' row.txn_type row.id %}">Edit</a>
@@ -221,7 +221,7 @@
 
 <div class="pagination">
   {% if page_obj.has_previous %}
-    <a href="?page={{ page_obj.previous_page_number }}">Previous</a>
+    <a href="?{% if base_qs %}{{ base_qs }}&{% endif %}page={{ page_obj.previous_page_number }}">Previous</a>
   {% else %}
     <span class="disabled">Previous</span>
   {% endif %}
@@ -229,11 +229,21 @@
   <span class="page-info">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
 
   {% if page_obj.has_next %}
-    <a href="?page={{ page_obj.next_page_number }}">Next</a>
+    <a href="?{% if base_qs %}{{ base_qs }}&{% endif %}page={{ page_obj.next_page_number }}">Next</a>
   {% else %}
     <span class="disabled">Next</span>
   {% endif %}
 </div>
+
+<form method="get" style="margin-top:0.75rem; display:flex; justify-content:flex-end; gap:0.5rem; align-items:center;">
+  <label style="font-size:0.85rem;color:var(--color-text-muted);">Show</label>
+  <select name="limit" onchange="this.form.submit()" style="padding:0.45rem 0.6rem;border:1px solid var(--color-border);border-radius:8px;">
+    <option value="10" {% if limit == '10' %}selected{% endif %}>10</option>
+    <option value="50" {% if limit == '50' %}selected{% endif %}>50</option>
+    <option value="100" {% if limit == '100' %}selected{% endif %}>100</option>
+  </select>
+  <span style="font-size:0.85rem;color:var(--color-text-muted);">entries</span>
+</form>
 
 {% if request.user.is_super_admin %}
 <div class="modal-overlay" id="confirm-delete">

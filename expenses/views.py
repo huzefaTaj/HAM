@@ -18,6 +18,14 @@ from savings.models import SavingsAccount
 
 
 def hello_expenses(request):
+    limit_raw = (request.GET.get('limit') or '').strip()
+    try:
+        limit = int(limit_raw) if limit_raw else 10
+    except ValueError:
+        limit = 10
+    if limit not in (10, 50, 100):
+        limit = 10
+
     expense_rows = [
         {
             'id': expense.expense_id,
@@ -43,10 +51,18 @@ def hello_expenses(request):
 
     transactions = sorted(expense_rows + income_rows, key=lambda row: row['created_at'], reverse=True)
 
-    paginator = Paginator(transactions, 10)
+    paginator = Paginator(transactions, limit)
     page_obj = paginator.get_page(request.GET.get('page'))
 
-    return render(request, 'expenses/hello.html', {'page_obj': page_obj})
+    params = request.GET.copy()
+    params.pop('page', None)
+    base_qs = params.urlencode()
+
+    return render(request, 'expenses/hello.html', {
+        'page_obj': page_obj,
+        'limit': str(limit),
+        'base_qs': base_qs,
+    })
 
 
 @role_required(User.Role.SUPER_ADMIN)
@@ -110,6 +126,7 @@ def add_transaction(request):
                         payment_type=Payment.Type.CONTRIBUTION,
                         entry_type=Payment.EntryType.CREDIT,
                         active=True,
+                        applies_to_year=(created_at.year if created_at else timezone.now().year),
                     )
                     SavingsAccount.objects.filter(pk=contribution_account.pk).update(balance=F('balance') + amount)
                     if created_at:
