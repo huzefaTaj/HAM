@@ -71,7 +71,6 @@
       <th>Member</th>
       <th class="num">Contribution</th>
       <th class="num">Interest Earned</th>
-      <th class="num">Income</th>
       <th class="num">Expenses</th>
       <th class="num">Remaining Balance</th>
     </tr>
@@ -82,7 +81,6 @@
       <td>{{ row.user.get_full_name }}</td>
       <td class="num">{{ CURRENCY_SYMBOL }}{{ row.contribution|floatformat:2 }}</td>
       <td class="num">{{ CURRENCY_SYMBOL }}{{ row.interest|floatformat:2 }}</td>
-      <td class="num">{{ CURRENCY_SYMBOL }}{{ row.income|floatformat:2 }}</td>
       <td class="num">{{ CURRENCY_SYMBOL }}{{ row.expenses|floatformat:2 }}</td>
       <td class="num">{{ CURRENCY_SYMBOL }}{{ row.remaining|floatformat:2 }}</td>
     </tr>
@@ -92,12 +90,11 @@
       <td><strong>Total</strong></td>
       <td class="num"><strong>{{ CURRENCY_SYMBOL }}{{ totals.contribution|floatformat:2 }}</strong></td>
       <td class="num"><strong>{{ CURRENCY_SYMBOL }}{{ totals.interest|floatformat:2 }}</strong></td>
-      <td class="num"><strong>{{ CURRENCY_SYMBOL }}{{ totals.income|floatformat:2 }}</strong></td>
       <td class="num"><strong>{{ CURRENCY_SYMBOL }}{{ totals.expenses|floatformat:2 }}</strong></td>
       <td class="num"><strong>{{ CURRENCY_SYMBOL }}{{ totals.remaining|floatformat:2 }}</strong></td>
     </tr>
     {% else %}
-    <tr><td colspan="6" class="empty-row">No users found.</td></tr>
+    <tr><td colspan="5" class="empty-row">No users found.</td></tr>
     {% endif %}
   </tbody>
 </table>
