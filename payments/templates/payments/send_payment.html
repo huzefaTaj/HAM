@@ -135,24 +135,119 @@
     display: inline-flex;
     align-items: center;
   }
+
+  .transfer-row {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    align-items: center;
+    margin-top: 0.5rem;
+  }
+
+  .kv {
+    margin: 0.25rem 0 0;
+    color: var(--color-text-muted);
+    font-size: 0.9rem;
+    line-height: 1.4;
+  }
+
+  .bank-box {
+    background: #F1F5F9;
+    border: 1px solid var(--color-border);
+    border-radius: 10px;
+    padding: 0.9rem 1rem;
+    margin: 0.75rem 0 1.1rem;
+  }
+
+  .bank-box h2 {
+    margin: 0 0 0.35rem;
+    font-size: 1rem;
+  }
+
+  .bank-grid {
+    display: grid;
+    grid-template-columns: 90px 1fr;
+    gap: 0.25rem 0.75rem;
+    font-size: 0.92rem;
+  }
+
+  .bank-label {
+    color: var(--color-text-muted);
+  }
+
+  .bank-value {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+  }
+
+  .copy-btn {
+    border: none;
+    background: transparent;
+    color: var(--color-text-muted);
+    border-radius: 8px;
+    padding: 0.15rem 0.25rem;
+    cursor: pointer;
+    line-height: 1;
+    display: inline-flex;
+    align-items: center;
+  }
+
+  .copy-btn:hover {
+    color: var(--color-primary);
+  }
+
+  .copy-btn svg {
+    width: 18px;
+    height: 18px;
+    display: block;
+  }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="form-card">
-  <h1>Send Payment</h1>
-	  <p class="form-hint">
-	    Contributed {{ CURRENCY_SYMBOL }}{{ paid_this_year|floatformat:2 }} this year ·
-	    up to {{ CURRENCY_SYMBOL }}{{ remaining_allowed|floatformat:2 }} more allowed ·
-	    {% if FINE_ALLOWED %}
-	    outstanding fine: {{ CURRENCY_SYMBOL }}{{ fine_due|floatformat:2 }}
-	    {% endif %}
-	  </p>
+	<div class="form-card">
+	  <h1>Send Payment</h1>
+		  <p class="form-hint">
+		    Contributed {{ CURRENCY_SYMBOL }}{{ paid_this_year|floatformat:2 }} this year ·
+		    up to {{ CURRENCY_SYMBOL }}{{ remaining_allowed|floatformat:2 }} more allowed ·
+		    {% if FINE_ALLOWED %}
+		    outstanding fine: {{ CURRENCY_SYMBOL }}{{ fine_due|floatformat:2 }}
+		    {% endif %}
+		  </p>
 
-  {% if error %}
-  <div class="form-error">{{ error }}</div>
-  {% endif %}
-  {% if success %}
+	  <div class="bank-box">
+	    <h2>Transfer amount to this bank</h2>
+	    <div class="bank-grid">
+	      <div class="bank-label">A/C No</div>
+	      <div class="bank-value">
+	        <span id="bank-ac">{{ BANK_ACCOUNT_NO }}</span>
+	        <button type="button" class="copy-btn" data-copy-target="bank-ac" aria-label="Copy account number" title="Copy">
+	          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+	            <path d="M8 8V6a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+	            <path d="M6 8h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+	          </svg>
+	        </button>
+	      </div>
+	      <div class="bank-label">IFSC</div>
+	      <div class="bank-value">
+	        <span id="bank-ifsc">{{ BANK_IFSC }}</span>
+	        <button type="button" class="copy-btn" data-copy-target="bank-ifsc" aria-label="Copy IFSC" title="Copy">
+	          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+	            <path d="M8 8V6a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+	            <path d="M6 8h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+	          </svg>
+	        </button>
+	      </div>
+	    </div>
+	    <p class="kv">Transfer your money first, then select your type and send your payment request.</p>
+	  </div>
+
+	  {% if error %}
+	  <div class="form-error">{{ error }}</div>
+	  {% endif %}
+	  {% if success %}
   <div class="form-success">{{ success }}</div>
   {% endif %}
 
@@ -169,23 +264,45 @@
 	      </select>
 	    </div>
 
-    <div class="field">
-      <label for="amount">Amount</label>
-      <input type="number" id="amount" name="amount" step="0.01" min="0.01" required>
-    </div>
+	    <div class="field">
+	      <label for="amount">Amount</label>
+	      <input type="number" id="amount" name="amount" step="0.01" min="0.01" required>
+	    </div>
 
-    <a class="btn-primary" href="#confirm-send-payment">Send</a>
-  </form>
-</div>
+	    <a class="btn-primary" href="#confirm-send-payment">Send</a>
+	  </form>
+	</div>
 
-<div class="modal-overlay" id="confirm-send-payment">
-  <div class="modal-box">
-    <h2>Send this payment?</h2>
-    <p>This will submit the payment for accountant approval.</p>
-    <div class="modal-actions">
-      <button type="submit" form="send-payment-form" class="btn-confirm">Confirm</button>
-      <a class="btn-cancel" href="#">Cancel</a>
-    </div>
-  </div>
-</div>
+	<div class="modal-overlay" id="confirm-send-payment">
+	  <div class="modal-box">
+	    <h2>Send this payment?</h2>
+	    <p>This will submit the payment for accountant approval.</p>
+	    <div class="modal-actions">
+	      <button type="submit" form="send-payment-form" class="btn-confirm">Confirm</button>
+	      <a class="btn-cancel" href="#">Cancel</a>
+	    </div>
+	  </div>
+	</div>
+
+  <script>
+    (function () {
+      document.addEventListener('click', async function (e) {
+        var btn = e.target && e.target.closest ? e.target.closest('button[data-copy-target]') : null;
+        if (!btn) return;
+
+        var targetId = btn.getAttribute('data-copy-target');
+        var el = targetId ? document.getElementById(targetId) : null;
+        var text = el ? (el.textContent || '').trim() : '';
+        if (!text) return;
+
+        try {
+          await navigator.clipboard.writeText(text);
+          btn.style.color = 'var(--color-secondary)';
+          setTimeout(function () { btn.style.color = ''; }, 900);
+        } catch (err) {
+          // ignore
+        }
+      });
+    })();
+  </script>
 {% endblock %}

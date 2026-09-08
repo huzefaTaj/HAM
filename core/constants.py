@@ -10,3 +10,7 @@ MONTHLY_FINE = Decimal('50.00')
 # - True: fine module works as before
 # - False: fine is not calculated/shown and fine payments are disabled
 FINE_ALLOWED = False
+
+# Bank details (for manual transfer instructions)
+BANK_ACCOUNT_NO = '786021001008287'
+BANK_IFSC = 'uucb0786002'
