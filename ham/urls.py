@@ -31,6 +31,8 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('login/', accounts_views.login_view, name='login'),
     path('logout/', accounts_views.logout_view, name='logout'),
+    path('profile/', accounts_views.profile_view, name='profile'),
+    path('change-email/', accounts_views.change_email_view, name='change_email'),
     path('change-password/', accounts_views.change_password_view, name='change_password'),
     path('', views.hello_world, name='hello_world'),
     path('loans/', loans_views.hello_loans, name='hello_loans'),

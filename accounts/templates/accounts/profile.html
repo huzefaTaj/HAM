@@ -1,0 +1,133 @@
+{% extends "base.html" %}
+
+{% block title %}Profile · HAM{% endblock %}
+
+{% block extra_head %}
+<style>
+  .profile-card {
+    max-width: 720px;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: 12px;
+    padding: 1.75rem;
+    margin: 0 auto;
+  }
+
+  .profile-card h1 {
+    margin: 0 0 1.25rem;
+    font-size: 1.3rem;
+  }
+
+  .row {
+    display: grid;
+    grid-template-columns: 160px 1fr;
+    gap: 0.75rem 1rem;
+    margin-bottom: 1.25rem;
+  }
+
+  .label {
+    color: var(--color-text-muted);
+    font-size: 0.85rem;
+  }
+
+  .value {
+    font-weight: 600;
+  }
+
+  .field {
+    margin-top: 0.75rem;
+  }
+
+  .field label {
+    display: block;
+    font-size: 0.85rem;
+    font-weight: 500;
+    margin-bottom: 0.35rem;
+  }
+
+  .field input {
+    width: 100%;
+    padding: 0.6rem 0.75rem;
+    border: 1px solid var(--color-border);
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: 0.95rem;
+    background: var(--color-surface);
+    color: var(--color-text);
+  }
+
+  .hint {
+    color: var(--color-text-muted);
+    font-size: 0.8rem;
+    margin-top: 0.35rem;
+  }
+
+  .msg-error {
+    background: #FEF2F2;
+    color: #B91C1C;
+    border: 1px solid #FECACA;
+    border-radius: 8px;
+    padding: 0.6rem 0.75rem;
+    font-size: 0.85rem;
+    margin-bottom: 1rem;
+  }
+
+  .msg-success {
+    background: #ECFDF5;
+    color: #047857;
+    border: 1px solid #A7F3D0;
+    border-radius: 8px;
+    padding: 0.6rem 0.75rem;
+    font-size: 0.85rem;
+    margin-bottom: 1rem;
+  }
+
+  .actions {
+    margin-top: 1rem;
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+
+  .actions a.btn-cancel {
+    text-decoration: none;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="profile-card">
+  <h1>My Profile</h1>
+
+  {% if error %}
+    <div class="msg-error">{{ error }}</div>
+  {% endif %}
+  {% if success %}
+    <div class="msg-success">{{ success }}</div>
+  {% endif %}
+
+  <div class="row">
+    <div class="label">Name</div>
+    <div class="value">{{ request.user.get_full_name }}</div>
+
+    <div class="label">Customer ID</div>
+    <div class="value">{{ request.user.id }}</div>
+
+    <div class="label">Savings Account ID</div>
+    <div class="value">{% if account %}{{ account.account_id }}{% else %}—{% endif %}</div>
+  </div>
+
+  <div class="field">
+    <div class="row" style="margin-bottom:0;">
+      <div class="label">Email</div>
+      <div class="value">{{ request.user.email }}</div>
+    </div>
+  </div>
+
+  <div class="actions">
+    <a class="btn-primary" href="{% url 'change_email' %}" style="text-decoration:none;display:inline-block;">Change Email</a>
+    <a class="btn-cancel" href="{% url 'change_password' %}">Change Password</a>
+  </div>
+</div>
+{% endblock %}

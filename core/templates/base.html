@@ -101,9 +101,60 @@
     color: var(--color-secondary);
   }
 
+  .account-menu {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+  }
+
+  .account-toggle {
+    display: none;
+  }
+
+  .account-btn {
+    color: var(--color-text-muted);
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    user-select: none;
+    display: inline-flex;
+    align-items: center;
+  }
+
+  .account-btn:hover {
+    color: var(--color-primary);
+  }
+
+  .account-dropdown {
+    position: absolute;
+    top: calc(100% + 10px);
+    right: 0;
+    min-width: 180px;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: 10px;
+    box-shadow: 0 10px 30px rgba(15, 23, 42, 0.12);
+    overflow: hidden;
+    display: none;
+  }
+
+  .account-dropdown a {
+    display: block;
+    padding: 0.8rem 1rem;
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .account-dropdown a:last-child {
+    border-bottom: none;
+  }
+
+  .account-toggle:checked ~ .account-dropdown {
+    display: block;
+  }
+
   main {
     padding: 2.5rem 1.5rem;
-    max-width: 960px;
+    max-width: 1200px;
     margin: 0 auto;
   }
 
@@ -168,6 +219,34 @@
       border-bottom: 1px solid var(--color-border);
     }
 
+    .account-menu {
+      width: 100%;
+      display: block;
+    }
+
+    .account-btn {
+      width: 100%;
+      padding: 0.85rem 1.5rem;
+      border-bottom: 1px solid var(--color-border);
+      display: block;
+    }
+
+    .account-dropdown {
+      position: static;
+      top: auto;
+      right: auto;
+      min-width: 0;
+      border: 0;
+      border-radius: 0;
+      box-shadow: none;
+    }
+
+    .account-dropdown a {
+      width: 100%;
+      padding: 0.85rem 2.25rem;
+      border-bottom: 1px solid var(--color-border);
+    }
+
     .nav-toggle:checked ~ .nav-links {
       max-height: min(70vh, 600px);
     }
@@ -197,7 +276,14 @@
       <a href="{% url 'add_transaction' %}">Add Transaction</a>
     {% endif %}
     <a href="{% url 'hello_fd' %}">FD</a>
-    <a class="logout" href="{% url 'logout' %}">Logout</a>
+    <div class="account-menu">
+      <input type="checkbox" id="account-toggle" class="account-toggle">
+      <label for="account-toggle" class="account-btn">Account</label>
+      <div class="account-dropdown">
+        <a href="{% url 'profile' %}">Profile</a>
+        <a class="logout" href="{% url 'logout' %}">Logout</a>
+      </div>
+    </div>
   </div>
 </nav>
 {% endif %}

@@ -7,6 +7,9 @@ from django.urls import reverse
 from django.utils.http import url_has_allowed_host_and_scheme
 from rest_framework_simplejwt.tokens import RefreshToken
 
+from savings.models import SavingsAccount
+from accounts.models import User
+
 
 def login_view(request):
     error = None
@@ -76,3 +79,44 @@ def change_password_view(request):
             return redirect('hello_dashboard')
 
     return render(request, 'accounts/change_password.html', {'error': error})
+
+
+def profile_view(request):
+    if not request.user.is_authenticated:
+        return redirect('login')
+
+    account = (
+        SavingsAccount.objects.filter(user=request.user, active=True)
+        .order_by('created_at')
+        .first()
+    )
+
+    return render(request, 'accounts/profile.html', {
+        'account': account,
+    })
+
+
+def change_email_view(request):
+    if not request.user.is_authenticated:
+        return redirect('login')
+
+    error = None
+    success = None
+
+    if request.method == 'POST':
+        email = (request.POST.get('email') or '').strip().lower()
+
+        if not email:
+            error = 'Email is required.'
+        elif User.objects.exclude(pk=request.user.pk).filter(email=email).exists():
+            error = 'This email is already in use.'
+
+        if not error:
+            request.user.email = email
+            request.user.save(update_fields=['email'])
+            success = 'Email updated.'
+
+    return render(request, 'accounts/change_email.html', {
+        'error': error,
+        'success': success,
+    })
