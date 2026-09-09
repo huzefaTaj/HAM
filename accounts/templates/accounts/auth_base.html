@@ -1,0 +1,129 @@
+{% extends "base.html" %}
+
+{% block extra_head %}
+<style>
+  body {
+    background: #ffffff;
+  }
+
+  main {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 1.5rem;
+    max-width: none;
+  }
+
+  .auth-card {
+    width: 100%;
+    max-width: 420px;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: 12px;
+    padding: 2rem;
+    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06);
+  }
+
+  .auth-logo {
+    display: block;
+    text-align: center;
+    font-weight: 800;
+    font-size: 1.75rem;
+    letter-spacing: 0.03em;
+    color: var(--color-primary);
+    margin-bottom: 0.25rem;
+  }
+
+  .auth-subtitle {
+    text-align: center;
+    color: var(--color-text-muted);
+    font-size: 0.9rem;
+    margin: 0 0 1.75rem;
+  }
+
+  .field {
+    margin-bottom: 1rem;
+  }
+
+  .field label {
+    display: block;
+    font-size: 0.85rem;
+    font-weight: 500;
+    margin-bottom: 0.35rem;
+  }
+
+  .field input {
+    width: 100%;
+    padding: 0.6rem 0.75rem;
+    border: 1px solid var(--color-border);
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: 0.95rem;
+  }
+
+  .field input:focus {
+    outline: 2px solid var(--color-secondary);
+    outline-offset: 1px;
+  }
+
+  .msg-error {
+    background: #FEF2F2;
+    color: #B91C1C;
+    border: 1px solid #FECACA;
+    border-radius: 8px;
+    padding: 0.6rem 0.75rem;
+    font-size: 0.85rem;
+    margin-bottom: 1rem;
+  }
+
+  .msg-success {
+    background: #ECFDF5;
+    color: #047857;
+    border: 1px solid #A7F3D0;
+    border-radius: 8px;
+    padding: 0.6rem 0.75rem;
+    font-size: 0.85rem;
+    margin-bottom: 1rem;
+  }
+
+  .auth-card .btn-primary {
+    width: 100%;
+    margin-top: 0.25rem;
+  }
+
+  .auth-links {
+    margin-top: 1rem;
+    text-align: center;
+    font-size: 0.9rem;
+  }
+
+  .auth-links a {
+    color: var(--color-primary);
+    text-decoration: none;
+    font-weight: 600;
+  }
+
+  .auth-links a:hover {
+    text-decoration: underline;
+  }
+</style>
+{% block auth_extra_head %}{% endblock %}
+{% endblock %}
+
+{% block content %}
+<div class="auth-card">
+  <span class="auth-logo">HAM</span>
+  <p class="auth-subtitle">{% block auth_subtitle %}{% endblock %}</p>
+
+  {% if error %}
+    <div class="msg-error">{{ error }}</div>
+  {% endif %}
+  {% if success %}
+    <div class="msg-success">{{ success }}</div>
+  {% endif %}
+
+  {% block auth_body %}{% endblock %}
+</div>
+{% endblock %}
+

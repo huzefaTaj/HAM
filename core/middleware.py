@@ -5,7 +5,7 @@ from django.urls import reverse
 from rest_framework_simplejwt.exceptions import TokenError
 from rest_framework_simplejwt.tokens import AccessToken, RefreshToken
 
-EXEMPT_PATH_PREFIXES = ('/login', '/logout', '/admin', '/static')
+EXEMPT_PATH_PREFIXES = ('/login', '/logout', '/admin', '/static', '/forgot-password', '/reset-password')
 CHANGE_PASSWORD_PATH = '/change-password/'
 
 
