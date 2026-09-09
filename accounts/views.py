@@ -22,6 +22,8 @@ def login_view(request):
     next_url = request.POST.get('next') or request.GET.get('next') or ''
     if request.GET.get('reset') == '1':
         success = 'Reset password link sent on your email address.'
+    if request.GET.get('pw_reset') == '1':
+        success = 'Password updated. You can now login.'
 
     if request.method == 'POST':
         email = request.POST.get('email', '').strip()
@@ -212,7 +214,7 @@ def reset_password_view(request, uidb64, token):
             user.set_password(new_password)
             user.must_change_password = False
             user.save(update_fields=['password', 'must_change_password'])
-            success = 'Password updated. You can now login.'
+            return redirect(f"{reverse('login')}?pw_reset=1")
 
     return render(request, 'accounts/reset_password.html', {
         'error': error,
