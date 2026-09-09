@@ -205,7 +205,7 @@
 <div class="payments-header">
   <h1>Payments</h1>
   <div style="display: flex; gap: 0.75rem;">
-    {% if request.user.is_super_admin %}
+    {% if request.user.is_accountant or request.user.is_super_admin %}
       <a class="btn-primary" href="{% url 'approve_payments' %}">Approve Payments</a>
     {% endif %}
     <a class="btn-primary" href="{% url 'send_payment' %}">Send Payment</a>

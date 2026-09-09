@@ -1,0 +1,10 @@
+HAM
+
+Hello{% if user %} {{ user.get_full_name }}{% endif %},
+
+Your payment is approved.
+
+Type: {{ payment_type }}
+Amount: {{ currency_symbol }}{{ amount }}
+Approved by: {{ approved_by }}
+

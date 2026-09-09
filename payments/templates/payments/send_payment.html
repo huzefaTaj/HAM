@@ -274,15 +274,19 @@
 	</div>
 
 	<div class="modal-overlay" id="confirm-send-payment">
-	  <div class="modal-box">
-	    <h2>Send this payment?</h2>
-	    <p>This will submit the payment for accountant approval.</p>
-	    <div class="modal-actions">
-	      <button type="submit" form="send-payment-form" class="btn-confirm">Confirm</button>
-	      <a class="btn-cancel" href="#">Cancel</a>
-	    </div>
-	  </div>
-	</div>
+		  <div class="modal-box">
+		    <h2>Send this payment?</h2>
+		    {% if request.user.is_accountant or request.user.is_super_admin %}
+		    <p>Your account and your payment will be automatically approved. Please verify the payment before confirm.</p>
+		    {% else %}
+		    <p>This will submit the payment for accountant approval.</p>
+		    {% endif %}
+		    <div class="modal-actions">
+		      <button type="submit" form="send-payment-form" class="btn-confirm">Confirm</button>
+		      <a class="btn-cancel" href="#">Cancel</a>
+		    </div>
+		  </div>
+		</div>
 
   <script>
     (function () {

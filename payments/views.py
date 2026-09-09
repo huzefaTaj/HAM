@@ -1,11 +1,15 @@
 from decimal import Decimal, InvalidOperation
 
 from django.core.paginator import Paginator
+from django.core.mail import EmailMultiAlternatives
 from django.db.models import F, Q, Sum
 from django.shortcuts import redirect, render
+from django.template.loader import render_to_string
+from django.urls import reverse
 from django.utils import timezone
 
 from accounts.models import User
+from core.constants import CURRENCY_SYMBOL
 from core.constants import ANNUAL_DUE, FINE_ALLOWED
 from core.decorators import role_required
 from expenses.models import Expense
@@ -226,6 +230,7 @@ def group_detail(request, kind, group_id):
 def send_payment(request):
     account = request.user.savings_accounts.order_by('created_at').first()
     year = timezone.now().year
+    auto_approve = request.user.is_accountant or request.user.is_super_admin
 
     paid_this_year = (
         Payment.objects.filter(
@@ -265,30 +270,40 @@ def send_payment(request):
                         f'{ANNUAL_DUE}. You can deposit up to {remaining_allowed} more this year.'
                     )
                 else:
-                    Payment.objects.create(
+                    payment = Payment.objects.create(
                         savings_account=account,
                         amount=amount,
                         payment_type=Payment.Type.CONTRIBUTION,
                         entry_type=Payment.EntryType.CREDIT,
-                        active=False,
+                        active=auto_approve,
                         applies_to_year=year,
                     )
-                    success = 'Payment submitted — pending accountant approval.'
+                    if auto_approve:
+                        _apply_approved_payment(payment)
+                        success = 'Payment approved and applied.'
+                    else:
+                        success = 'Payment submitted — pending accountant approval.'
+                        _notify_payment_submitted(request, payment)
             elif payment_type == Payment.Type.FINE:
                 if not FINE_ALLOWED:
                     error = 'Fine payments are currently disabled.'
                 elif amount > fine_due:
                     error = f'This exceeds your outstanding fine of {fine_due}.'
                 else:
-                    Payment.objects.create(
+                    payment = Payment.objects.create(
                         savings_account=account,
                         amount=amount,
                         payment_type=Payment.Type.FINE,
                         entry_type=Payment.EntryType.DEBIT,
-                        active=False,
+                        active=auto_approve,
                         applies_to_year=year,
                     )
-                    success = 'Fine payment submitted — pending accountant approval.'
+                    if auto_approve:
+                        _apply_approved_payment(payment)
+                        success = 'Fine payment approved and applied.'
+                    else:
+                        success = 'Fine payment submitted — pending accountant approval.'
+                        _notify_payment_submitted(request, payment)
             else:
                 error = 'Choose a valid payment type.'
 
@@ -301,7 +316,7 @@ def send_payment(request):
     })
 
 
-@role_required(User.Role.SUPER_ADMIN)
+@role_required(User.Role.ACCOUNTANT, User.Role.SUPER_ADMIN)
 def approve_payments(request):
     if request.method == 'POST':
         transaction_id = request.POST.get('transaction_id')
@@ -315,29 +330,7 @@ def approve_payments(request):
             if action == 'approve':
                 payment.active = True
                 payment.save(update_fields=['active'])
-
-                if payment.payment_type == Payment.Type.FINE:
-                    # Fine payments settle the fine record only — the payer's own
-                    # savings balance is untouched. The amount is instead
-                    # redistributed as income to every other account.
-                    sync_fine(payment.savings_account, compute_fine_due(payment.savings_account))
-
-                    redistribution = Income.objects.create(
-                        income_name=f'Fine redistribution — {payment.savings_account.account_id}',
-                        income_type=Income.Type.FINE_REDISTRIBUTION,
-                        amount=payment.amount,
-                        source_payment=payment,
-                    )
-                    redistribution.excluded_accounts.set([payment.savings_account])
-                    generate_income_payments(redistribution)
-                elif payment.entry_type == Payment.EntryType.CREDIT:
-                    SavingsAccount.objects.filter(pk=payment.savings_account_id).update(
-                        balance=F('balance') + payment.amount
-                    )
-                else:
-                    SavingsAccount.objects.filter(pk=payment.savings_account_id).update(
-                        balance=F('balance') - payment.amount
-                    )
+                _apply_approved_payment(payment, approved_by_user=request.user)
             elif action == 'reject':
                 payment.delete()
 
@@ -350,6 +343,88 @@ def approve_payments(request):
     )
 
     return render(request, 'payments/approve_payments.html', {'pending_payments': pending_payments})
+
+
+def _notify_payment_submitted(request, payment):
+    try:
+        to_emails = list(
+            User.objects.filter(
+                active=True,
+                role__in=[User.Role.ACCOUNTANT, User.Role.SUPER_ADMIN],
+            ).values_list('email', flat=True)
+        )
+        if not to_emails:
+            return
+
+        approve_url = request.build_absolute_uri(reverse('approve_payments'))
+        user_name = payment.savings_account.user.get_full_name() or payment.savings_account.user.email
+        ctx = {
+            'user_name': user_name,
+            'payment_type': payment.get_payment_type_display(),
+            'amount': f'{payment.amount:.2f}',
+            'currency_symbol': CURRENCY_SYMBOL,
+            'approve_url': approve_url,
+        }
+        subject = 'HAM payment approval needed'
+        text_body = render_to_string('accounts/emails/payment_submitted.txt', ctx)
+        html_body = render_to_string('accounts/emails/payment_submitted.html', ctx)
+
+        msg = EmailMultiAlternatives(subject=subject, body=text_body, to=to_emails)
+        msg.attach_alternative(html_body, 'text/html')
+        msg.send(fail_silently=True)
+    except Exception:
+        return
+
+
+def _apply_approved_payment(payment, approved_by_user=None):
+    if payment.payment_type == Payment.Type.FINE:
+        # Fine payments settle the fine record only — the payer's own
+        # savings balance is untouched. The amount is instead
+        # redistributed as income to every other account.
+        sync_fine(payment.savings_account, compute_fine_due(payment.savings_account))
+
+        redistribution = Income.objects.create(
+            income_name=f'Fine redistribution — {payment.savings_account.account_id}',
+            income_type=Income.Type.FINE_REDISTRIBUTION,
+            amount=payment.amount,
+            source_payment=payment,
+        )
+        redistribution.excluded_accounts.set([payment.savings_account])
+        generate_income_payments(redistribution)
+    elif payment.entry_type == Payment.EntryType.CREDIT:
+        SavingsAccount.objects.filter(pk=payment.savings_account_id).update(
+            balance=F('balance') + payment.amount
+        )
+    else:
+        SavingsAccount.objects.filter(pk=payment.savings_account_id).update(
+            balance=F('balance') - payment.amount
+        )
+
+    # email the payer only when an approval is performed by someone
+    if approved_by_user is None:
+        return
+    try:
+        if approved_by_user.role == User.Role.SUPER_ADMIN:
+            approved_by = 'Super Admin'
+        else:
+            approved_by = approved_by_user.get_full_name() or 'Accountant'
+
+        user = payment.savings_account.user
+        subject = 'HAM payment approved'
+        ctx = {
+            'user': user,
+            'payment_type': payment.get_payment_type_display(),
+            'amount': f'{payment.amount:.2f}',
+            'currency_symbol': CURRENCY_SYMBOL,
+            'approved_by': approved_by,
+        }
+        text_body = render_to_string('accounts/emails/payment_approved.txt', ctx)
+        html_body = render_to_string('accounts/emails/payment_approved.html', ctx)
+        msg = EmailMultiAlternatives(subject=subject, body=text_body, to=[user.email])
+        msg.attach_alternative(html_body, 'text/html')
+        msg.send(fail_silently=True)
+    except Exception:
+        pass
 
 
 @role_required(User.Role.SUPER_ADMIN)

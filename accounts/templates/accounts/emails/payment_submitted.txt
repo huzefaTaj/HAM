@@ -1,0 +1,11 @@
+HAM
+
+New payment request submitted.
+
+User: {{ user_name }}
+Type: {{ payment_type }}
+Amount: {{ currency_symbol }}{{ amount }}
+
+Approve here:
+{{ approve_url }}
+
